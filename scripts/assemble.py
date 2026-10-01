@@ -17,7 +17,12 @@ head='''<meta charset="utf-8">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
 '''
-reg="<script>if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>\n"
+reg="""<script>if('serviceWorker' in navigator&&location.protocol==='https:'){
+  const had=!!navigator.serviceWorker.controller; let done=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(had&&!done){ done=true; location.reload(); } });
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>{ r.update(); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') r.update().catch(()=>{}); }); }).catch(()=>{}));
+}</script>
+"""
 open(D+'/index.html','w').write('<!doctype html>\n<html lang="de">\n<head>\n'+head+'</head>\n<body>\n'+s+'\n'+reg+'</body>\n</html>\n')
 for f in ('basiskarte.json','drehorte.json'): shutil.copy(P+'/site/'+f,D)
 fotos=sorted(os.path.basename(f) for f in glob.glob(P+'/site/fotos/*.jpg'))
