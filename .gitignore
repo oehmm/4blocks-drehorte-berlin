@@ -1,0 +1,5 @@
+osm/
+raw/
+__pycache__/
+.DS_Store
+scripts/_ref_base.py
