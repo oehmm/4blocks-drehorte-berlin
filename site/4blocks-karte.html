@@ -45,6 +45,7 @@
   --ok:#2F8A4E; --me:#1F6FEB;
   --shadow:0 1px 2px rgba(20,20,20,.08),0 10px 26px rgba(20,20,20,.12);
 }
+[hidden]{display:none!important}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body);overflow:hidden}
 *{box-sizing:border-box}
@@ -223,6 +224,24 @@ button,input,select{font:inherit;color:inherit}
 @keyframes ping{from{transform:scale(1);opacity:.8}to{transform:scale(2.6);opacity:0}}
 .gps #pAll{display:flex;flex-direction:column}
 .gps #pAll>.list{order:-1;border-bottom:1px solid var(--line)}
+.add-b{gap:6px}
+.add-b .btn{justify-content:center}
+.mk.own{outline:2px dashed var(--ink);outline-offset:2px}
+.own-tag{font:500 10px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);border:1px dashed var(--ink-3);border-radius:3px;padding:3px 5px}
+.adding .leaflet-container,.adding .leaflet-interactive{cursor:crosshair!important}
+.add-bar{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:1050;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:8px;padding:9px 10px 9px 14px;font-size:13px;width:max-content;max-width:calc(100% - 28px)}
+.pin-new{width:26px;height:26px;border-radius:50% 50% 50% 0;rotate:-45deg;background:var(--accent);border:3px solid var(--panel);box-shadow:0 2px 8px rgba(0,0,0,.45);translate:-50% -115%}
+.form{display:grid;gap:11px}
+.form h2{margin:0;font:400 28px/1 var(--f-display);text-transform:uppercase;padding-right:40px}
+.fld{display:grid;gap:4px}
+.fld>span{font-size:12px;color:var(--ink-3)}
+.fld>span b{color:var(--accent-ink);font-weight:600}
+.fld input,.fld select,.fld textarea{width:100%;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:5px;background:var(--bg);font-size:14px}
+.fld textarea{resize:vertical;min-height:84px;line-height:1.45}
+.fld input::placeholder,.fld textarea::placeholder{color:var(--ink-3)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pos{font:12px var(--f-mono);color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.ferr{margin:0;color:var(--k-glamour);font-size:12.5px}
 .near-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:12px 20px 6px;font-size:12px;color:var(--ink-3)}
 .near-h b{font:600 11px/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--me)}
 .item .dist{color:var(--me);font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-weight:500}
@@ -266,6 +285,10 @@ button,input,select{font:inherit;color:inherit}
     </div>
     <div class="side-body" id="sideBody">
       <div id="pAll">
+        <div class="block add-b" id="addBlock" hidden>
+          <button class="btn primary" id="addBtn" type="button">+ Drehort hinzufügen</button>
+          <p class="note" id="addNote">Kennst du einen weiteren Drehort? Setze einen Pin und beschreibe die Szene.</p>
+        </div>
         <div class="block">
           <div class="block-h"><span class="lbl">Art des Schauplatzes</span><button class="link-btn" id="katAll">alle</button></div>
           <div class="chips" id="kats"></div>
@@ -297,6 +320,7 @@ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 const [BASE,D]=await Promise.all(['basiskarte.json','drehorte.json'].map(f=>fetch(f).then(r=>r.json())));
 const O=D.orte, KAT=D.kat, FIG=D.fig;
 O.forEach((o,i)=>{o.nr=i+1; o.ll=L.latLng(o.p[1],o.p[0]); o.isLine=!!o.line;});
+const NFIX=O.length;
 const BY={}; O.forEach(o=>BY[o.id]=o);
 $('#nOrte').textContent=O.length;
 
@@ -385,7 +409,7 @@ function buildOrte(){
     if(o.radius){ shapes[o.id]=L.circle(o.ll,{renderer:rHl,radius:o.radius,color:c,weight:act?3:2,fillColor:c,fillOpacity:act?.28:.16,dashArray:'5 4'})
         .on('click',()=>select(o,{fly:false})).addTo(hlLayer); }
     const m=L.marker(o.ll,{keyboard:true,title:o.n,riseOnHover:true,zIndexOffset:act?1000:0,
-      icon:L.divIcon({className:'',iconSize:[0,0],html:'<div class="mk'+(z<14?' sm':'')+(o.line||o.poly||o.radius?' ln':'')+(act?' on':'')+(seen.has(o.id)?' seen':'')+'" style="--c:'+c+'">'+num(o)+'</div>'})})
+      icon:L.divIcon({className:'',iconSize:[0,0],html:'<div class="mk'+(o.own?' own':'')+(z<14?' sm':'')+(o.line||o.poly||o.radius?' ln':'')+(act?' on':'')+(seen.has(o.id)?' seen':'')+'" style="--c:'+c+'">'+num(o)+'</div>'})})
       .bindTooltip(ttHtml(o),{className:'tt',direction:'top',offset:[0,-16]}).on('click',()=>select(o,{fly:false}));
     markers[o.id]=m; m.addTo(mkLayer);
   }
@@ -471,6 +495,7 @@ function onPos(pos){
 /* ---------- Seitenleiste ---------- */
 const kc={}; O.forEach(o=>kc[o.kat]=(kc[o.kat]||0)+1);
 $('#kats').innerHTML=Object.entries(KAT).map(([k,v])=>`<button class="chip" data-k="${k}" aria-pressed="true" style="--c:var(${v[1]})"><span class="dot"></span>${esc(v[0])} <span class="n">${kc[k]||0}</span></button>`).join('');
+function updateCounts(){ const c={}; O.forEach(o=>c[o.kat]=(c[o.kat]||0)+1); $('#kats').querySelectorAll('.chip').forEach(b=>b.querySelector('.n').textContent=c[b.dataset.k]||0); $('#nOrte').textContent=O.length; }
 $('#kats').onclick=e=>{const b=e.target.closest('.chip'); if(!b)return; const k=b.dataset.k;
   if(st.kats.size===Object.keys(KAT).length){st.kats=new Set([k]);} else if(st.kats.has(k)){st.kats.delete(k); if(!st.kats.size)st.kats=new Set(Object.keys(KAT));} else st.kats.add(k);
   refresh();};
@@ -483,7 +508,7 @@ function setFig(f){st.fig=f; if(st.tab!=='all')setTab('all'); refresh();}
 
 function itemHtml(o,extra=''){
   return `<li><button class="item${sel===o?' on':''}" data-id="${o.id}"><span class="pin${o.isLine?' line':''}" style="--c:var(${KAT[o.kat][1]})">${num(o)}</span>
-    <span><span class="t">${esc(o.n)}</span><span class="a">${esc(o.adr.split(',')[0])}</span><span class="k">${me?`<span class="dist">${fmtM(distTo(o))}</span> · `:''}${esc(o.kiez)} · ${esc(KAT[o.kat][0])}</span></span><span class="badges">${SZ[o.id]?'<span class="seen sz-b">Szene</span>':''}${seen.has(o.id)?'<span class="seen">besucht</span>':''}</span></button></li>${extra}`;
+    <span><span class="t">${esc(o.n)}</span><span class="a">${esc((o.adr||'Position auf der Karte').split(',')[0])}</span><span class="k">${me?`<span class="dist">${fmtM(distTo(o))}</span> · `:''}${esc(o.kiez)} · ${esc(KAT[o.kat][0])}</span></span><span class="badges">${o.own?'<span class="own-tag">eigener</span>':''}${SZ[o.id]?'<span class="seen sz-b">Szene</span>':''}${seen.has(o.id)?'<span class="seen">besucht</span>':''}</span></button></li>${extra}`;
 }
 function renderList(){
   $('#kats').querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',st.kats.has(b.dataset.k)));
@@ -622,9 +647,11 @@ async function initSzenen(){
       snap.docs.forEach(d=>{const v=d.data(); if(v&&v.asset) SZ[d.id]={src:'/_blob/'+v.asset,asset:v.asset,folge:v.folge||''};});
       onSzChange();
     },e=>console.warn('szenen',e&&e.code));
+    dbNS.collection('orte').onSnapshot(snap=>setOwn(snap.docs.map(d=>({...d.data(),id:d.id}))),e=>console.warn('orte',e&&e.code));
   } else if(!window.claude?.use){
     szMode='local';
     try{ (await idbAll()).forEach(r=>SZ[r.id]={src:URL.createObjectURL(r.blob),folge:r.folge||'',local:1}); }catch(e){ szMode='none'; }
+    setOwn(loadLocalOwn());
     onSzChange();
   }
 }
@@ -633,23 +660,141 @@ document.addEventListener('paste',e=>{
   const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));
   if(it){ e.preventDefault(); uploadSzene(sel,it.getAsFile()); }
 });
+/* ---------- Eigene Drehorte hinzufügen ---------- */
+let adding=false, formOpen=false, draft=null, pinMk=null, editing=null;
+const OWNKEY='4b-orte';
+function loadLocalOwn(){ try{ return JSON.parse(localStorage.getItem(OWNKEY)||'[]'); }catch(e){ return []; } }
+function saveLocalOwn(list){ localStorage.setItem(OWNKEY,JSON.stringify(list)); }
+function cleanOwn(r){
+  const p=Array.isArray(r.p)&&r.p.length===2&&r.p.every(Number.isFinite)?r.p:null; if(!p||!r.n) return null;
+  const url=/^https?:\/\//i.test(r.qu||'')?String(r.qu):'';
+  let host=''; try{ host=url?new URL(url).hostname.replace(/^www\./,''):''; }catch(e){}
+  return {id:String(r.id),own:1,n:String(r.n).slice(0,120),adr:String(r.adr||'').slice(0,160),kat:KAT[r.kat]?r.kat:'kiez',rolle:String(r.rolle||'').slice(0,1500),
+    fig:(Array.isArray(r.fig)?r.fig:[]).filter(f=>FIG[f]),staffel:String(r.staffel||''),st:String(r.st||'').slice(0,80),kiez:String(r.kiez||'Berlin').slice(0,60),
+    p:[+p[0].toFixed(6),+p[1].toFixed(6)],q:url?[[host||'Quelle',url]]:[],qu:url,at:+r.at||0};
+}
+function setOwn(list){
+  for(let i=O.length-1;i>=NFIX;i--){ delete BY[O[i].id]; O.splice(i,1); }
+  list.map(cleanOwn).filter(Boolean).sort((a,b)=>a.at-b.at).forEach(o=>{ o.ll=L.latLng(o.p[1],o.p[0]); O.push(o); BY[o.id]=o; });
+  O.forEach((o,i)=>o.nr=i+1);
+  if(sel&&!BY[sel.id]){ sel=null; if(!formOpen) $('#detail').hidden=true; } else if(sel) sel=BY[sel.id];
+  updateCounts(); buildOrte(); renderList(); if(st.tab==='tour') renderTour();
+  if(sel&&!formOpen) select(sel,{fly:false});
+}
+function updateAddUi(){ $('#addBlock').hidden=!canUpload(); if(szMode==='local') $('#addNote').textContent='Kennst du einen weiteren Drehort? Setze einen Pin und beschreibe die Szene. Eigene Orte werden nur auf diesem Gerät gespeichert.'; }
+function startAdd(){
+  if(st.tab!=='all') setTab('all');
+  adding=true; editing=null; draft={kat:'clan',fig:[],staffel:''}; sel=null; buildOrte();
+  $('#detail').hidden=true; document.body.classList.add('adding'); $('#side').classList.remove('open');
+  const bar=document.createElement('div'); bar.className='add-bar'; bar.id='addBar';
+  bar.innerHTML=`<span>Tippe auf die Karte, wo gedreht wurde.</span>${me?'<button class="btn" id="abMe" type="button">Mein Standort</button>':''}<button class="btn" id="abX" type="button">Abbrechen</button>`;
+  L.DomEvent.disableClickPropagation(bar); $('#map').append(bar);
+  $('#abX').onclick=cancelAdd; if($('#abMe')) $('#abMe').onclick=()=>placePin(me.ll);
+}
+function cancelAdd(){
+  adding=false; formOpen=false; editing=null; draft=null; document.body.classList.remove('adding');
+  $('#addBar')?.remove(); if(pinMk){ map.removeLayer(pinMk); pinMk=null; }
+  $('#detail').hidden=true; sel=null; buildOrte();
+}
+function placePin(ll){
+  if(!pinMk){ pinMk=L.marker(ll,{draggable:true,zIndexOffset:3000,keyboard:false,icon:L.divIcon({className:'',iconSize:[0,0],html:'<div class="pin-new"></div>'})}).addTo(map);
+    pinMk.on('dragend',()=>{ draft.p=[pinMk.getLatLng().lng,pinMk.getLatLng().lat]; updatePos(); reverseGeo(); }); }
+  else pinMk.setLatLng(ll);
+  draft.p=[ll.lng,ll.lat];
+  if(adding){ adding=false; $('#addBar')?.remove(); document.body.classList.remove('adding'); openForm(null); }
+  else updatePos();
+  reverseGeo();
+}
+function updatePos(){ const e=$('#fPos'); if(e&&draft.p) e.textContent=draft.p[1].toFixed(5)+', '+draft.p[0].toFixed(5); }
+let geoSeq=0;
+async function reverseGeo(){ // Adresse vorschlagen, wenn das Netz es erlaubt (im Artifact blockiert)
+  if(!draft?.p) return; const my=++geoSeq;
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&addressdetails=1&accept-language=de&lat=${draft.p[1]}&lon=${draft.p[0]}`).then(r=>r.json());
+    if(my!==geoSeq||!r||!r.address) return; const a=r.address;
+    const adr=[(a.road||a.pedestrian||a.square||'')+(a.house_number?' '+a.house_number:''),[a.postcode,'Berlin'].filter(Boolean).join(' ')].filter(s=>s.trim()).join(', ');
+    draft.kiez=a.suburb||a.city_district||'Berlin';
+    const f=$('#fAdr'); if(f&&(!f.value||f.dataset.auto)){ f.value=adr; f.dataset.auto='1'; }
+  }catch(e){}
+}
+function openForm(o){
+  formOpen=true; editing=o||null;
+  if(o){ draft={...o,fig:[...o.fig]}; sel=null; buildOrte();
+    pinMk&&map.removeLayer(pinMk); pinMk=null;
+    pinMk=L.marker(o.ll,{draggable:true,zIndexOffset:3000,keyboard:false,icon:L.divIcon({className:'',iconSize:[0,0],html:'<div class="pin-new"></div>'})}).addTo(map);
+    pinMk.on('dragend',()=>{ draft.p=[pinMk.getLatLng().lng,pinMk.getLatLng().lat]; updatePos(); reverseGeo(); }); }
+  const d=$('#detail'); d.hidden=false; d.style.setProperty('--c',css('--accent'));
+  const kOpts=Object.entries(KAT).map(([k,v])=>`<option value="${k}"${draft.kat===k?' selected':''}>${esc(v[0])}</option>`).join('');
+  const sOpts=['','S1','S2','S3','S1–S3'].map(s=>`<option value="${s}"${draft.staffel===s?' selected':''}>${s||'unbekannt'}</option>`).join('');
+  const figs=Object.keys(FIG).map(f=>`<button type="button" class="chip fig" data-f="${f}" aria-pressed="${draft.fig.includes(f)}">${esc(f)}</button>`).join('');
+  d.innerHTML=`<div class="d-band"></div><button class="x x-float" id="dClose" aria-label="Abbrechen" title="Abbrechen (Esc)">${X}</button>
+  <div class="d-scroll"><form class="form" id="oForm" novalidate>
+    <h2>${o?'Drehort bearbeiten':'Neuer Drehort'}</h2>
+    <div class="pos">Position: <span id="fPos"></span><span>· Pin ziehen oder auf die Karte tippen</span></div>
+    <label class="fld"><span>Name <b>*</b></span><input id="fName" maxlength="120" required placeholder="z. B. Shisha-Bar in der Sonnenallee" value="${esc(draft.n||'')}"></label>
+    <label class="fld"><span>Adresse</span><input id="fAdr" maxlength="160" placeholder="Straße Hausnummer, PLZ Berlin" value="${esc(draft.adr||'')}"></label>
+    <label class="fld"><span>Was wurde hier gedreht?</span><textarea id="fRolle" maxlength="1500" placeholder="Welche Szene, wer ist zu sehen, was passiert?">${esc(draft.rolle||'')}</textarea></label>
+    <div class="row2">
+      <label class="fld"><span>Art des Schauplatzes</span><select id="fKat">${kOpts}</select></label>
+      <label class="fld"><span>Staffel</span><select id="fStaffel">${sOpts}</select></label>
+    </div>
+    <div class="fld"><span>Figuren</span><div class="chips" id="fFig">${figs}</div></div>
+    <label class="fld"><span>Anfahrt</span><input id="fSt" maxlength="80" placeholder="z. B. U Hermannplatz" value="${esc(draft.st||'')}"></label>
+    <label class="fld"><span>Quelle (Link)</span><input id="fQ" type="url" maxlength="400" placeholder="https://…" value="${esc(draft.qu||'')}"></label>
+    <p class="ferr" id="fErr" hidden></p>
+    <div class="btnrow"><button class="btn primary" type="submit" id="fSave">Speichern</button><button class="btn" type="button" id="fCancel">Abbrechen</button></div>
+  </form></div>`;
+  updatePos();
+  $('#dClose').onclick=cancelAdd; $('#fCancel').onclick=cancelAdd;
+  $('#fAdr').oninput=e=>delete e.target.dataset.auto;
+  $('#fFig').onclick=e=>{ const b=e.target.closest('.chip'); if(!b) return; const f=b.dataset.f; const i=draft.fig.indexOf(f); i<0?draft.fig.push(f):draft.fig.splice(i,1); b.setAttribute('aria-pressed',i<0); };
+  $('#oForm').onsubmit=e=>{ e.preventDefault(); saveForm(); };
+  if(!o) setTimeout(()=>$('#fName').focus(),50);
+  if(innerWidth>760) map.panTo(L.latLng(draft.p[1],draft.p[0]));
+}
+async function saveForm(){
+  const v=id=>$('#'+id).value.trim(), err=$('#fErr');
+  const rec={n:v('fName'),adr:v('fAdr'),rolle:v('fRolle'),kat:v('fKat'),staffel:v('fStaffel'),fig:draft.fig.slice(),st:v('fSt'),qu:v('fQ'),kiez:draft.kiez||editing?.kiez||'Berlin',p:draft.p,at:editing?.at||Date.now()};
+  if(!rec.n){ err.textContent='Bitte gib dem Drehort einen Namen.'; err.hidden=false; $('#fName').focus(); return; }
+  if(rec.qu&&!/^https?:\/\//i.test(rec.qu)){ err.textContent='Die Quelle muss ein Link sein, der mit https:// beginnt.'; err.hidden=false; $('#fQ').focus(); return; }
+  const id=editing?.id||'eigen-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  $('#fSave').disabled=true; $('#fSave').textContent='Wird gespeichert …';
+  try{
+    if(szMode==='shared') await dbNS.doc('orte/'+id).set(rec);
+    else { const list=loadLocalOwn().filter(r=>r.id!==id); list.push({...rec,id}); saveLocalOwn(list); setOwn(list); }
+  }catch(e){ err.textContent=errText(e); err.hidden=false; $('#fSave').disabled=false; $('#fSave').textContent='Speichern'; return; }
+  const wasEdit=!!editing; formOpen=false; editing=null; if(pinMk){ map.removeLayer(pinMk); pinMk=null; }
+  if(!BY[id]){ const o=cleanOwn({...rec,id}); o.ll=L.latLng(o.p[1],o.p[0]); O.push(o); BY[id]=o; O.forEach((x,i)=>x.nr=i+1); updateCounts(); }
+  toast(wasEdit?'Änderungen gespeichert':'Drehort hinzugefügt: '+rec.n);
+  select(BY[id],{fly:false});
+}
+async function deleteOwn(o){
+  try{
+    if(szMode==='shared'){ await dbNS.doc('orte/'+o.id).delete(); if(SZ[o.id]) await removeSzene(o); }
+    else { saveLocalOwn(loadLocalOwn().filter(r=>r.id!==o.id)); if(SZ[o.id]) await removeSzene(o); setOwn(loadLocalOwn()); }
+    toast('Drehort gelöscht'); close();
+  }catch(e){ toast(errText(e)); }
+}
+$('#addBtn').onclick=startAdd;
+
 function currentSeq(){return st.tab==='tour'?D.tour.ids.map(i=>BY[i]):listSeq();}
 function select(o,opt={}){
+  if(formOpen||adding) return;
   sel=o; buildOrte(); renderList(); if(st.tab==='tour')renderTour();
   const c=col(o), seq=currentSeq(), idx=seq.indexOf(o);
-  const gm='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(o.adr.replace(/\s*\(.*?\)/,''));
+  const gm='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(o.adr?o.adr.replace(/\s*\(.*?\)/,''):o.p[1]+','+o.p[0]);
   const dir='https://www.google.com/maps/dir/?api=1&travelmode=transit&destination='+o.p[1]+','+o.p[0];
   const d=$('#detail'); d.hidden=false; d.style.setProperty('--c',c);
   d.innerHTML=`<div class="d-band"></div><button class="x x-float" id="dClose" aria-label="Infokarte schließen" title="Schließen (Esc)">${X}</button><div class="d-scroll"><div id="dMedia"></div>
-    <div class="d-top"><span class="d-kat"><span class="dot"></span>${st.tab==='tour'?'Station '+num(o):o.nr} · ${esc(KAT[o.kat][0])} · ${esc(o.kiez)}</span></div>
+    <div class="d-top"><span class="d-kat"><span class="dot"></span>${st.tab==='tour'?'Station '+num(o):o.nr} · ${esc(KAT[o.kat][0])} · ${esc(o.kiez)}${o.own?' · Eigener Eintrag':''}</span></div>
     <h2 class="d-title">${esc(o.n)}</h2>
-    <div class="d-addr"><span id="dAdr">${esc(o.adr)}</span><button class="copy" id="dCopy">kopieren</button></div>
-    <p class="d-text">${esc(o.rolle)}</p>
+    ${o.adr?`<div class="d-addr"><span id="dAdr">${esc(o.adr)}</span><button class="copy" id="dCopy">kopieren</button></div>`:''}
+    ${o.rolle?`<p class="d-text">${esc(o.rolle)}</p>`:''}
     ${o.tipp?`<p class="tip"><b>Vor Ort:</b> ${esc(o.tipp)}</p>`:''}
     <dl class="meta">
-      <dt>Anfahrt</dt><dd>${stationHtml(o.st)}</dd>
+      ${o.st?`<dt>Anfahrt</dt><dd>${stationHtml(o.st)}</dd>`:''}
       ${o.fig.length?`<dt>Figuren</dt><dd>${o.fig.map(f=>`<button class="fig" data-f="${f}" title="Alle Orte mit ${esc(f)}">${esc(FIG[f])}</button>`).join('')}</dd>`:''}
-      <dt>Staffel</dt><dd><span class="stf">${esc(o.staffel)}</span></dd>
+      ${o.staffel?`<dt>Staffel</dt><dd><span class="stf">${esc(o.staffel)}</span></dd>`:''}
       ${me?`<dt>Entfernung</dt><dd id="dDist">${distHtml(o)}</dd>`:''}
     </dl>
     ${o.alt?`<p class="alt">${esc(o.alt)}</p>`:''}
@@ -659,12 +804,15 @@ function select(o,opt={}){
       <a class="btn" href="${gm}" target="_blank" rel="noopener">In Google Maps</a>
       <button class="btn" id="dSeen" aria-pressed="${seen.has(o.id)}">${seen.has(o.id)?'✓ Besucht':'Als besucht markieren'}</button>
     </div>
-    <div class="srcs">Quellen: ${o.q.map(q=>`<a href="${q[1]}" target="_blank" rel="noopener">${esc(q[0])}</a>`).join('')}</div>
+    ${o.q.length?`<div class="srcs">Quellen: ${o.q.map(q=>`<a href="${esc(q[1])}" target="_blank" rel="noopener">${esc(q[0])}</a>`).join('')}</div>`:''}
+    ${o.own&&canUpload()?`<div class="btnrow"><button class="btn" id="oEdit">Bearbeiten</button><button class="btn" id="oDel">Löschen</button></div>`:''}
   </div>
   <div class="d-nav"><button id="dPrev">← zurück</button><span>${idx+1} / ${seq.length}</span><button id="dNext">weiter →</button></div>`;
   $('#dClose').onclick=close;
   renderSzene(o);
-  $('#dCopy').onclick=async e=>{const t=o.adr; try{await navigator.clipboard.writeText(t); e.target.textContent='kopiert';}catch(_){const r=document.createRange(); r.selectNodeContents($('#dAdr')); const s=getSelection(); s.removeAllRanges(); s.addRange(r);}};
+  if(o.own&&canUpload()){ $('#oEdit').onclick=()=>openForm(o);
+    const od=$('#oDel'); od.onclick=()=>{ if(od.dataset.c) return deleteOwn(o); od.dataset.c='1'; od.textContent='Wirklich löschen?'; setTimeout(()=>{ if(od.isConnected){ delete od.dataset.c; od.textContent='Löschen'; } },4000); }; }
+  if($('#dCopy')) $('#dCopy').onclick=async e=>{const t=o.adr; try{await navigator.clipboard.writeText(t); e.target.textContent='kopiert';}catch(_){const r=document.createRange(); r.selectNodeContents($('#dAdr')); const s=getSelection(); s.removeAllRanges(); s.addRange(r);}};
   $('#dSeen').onclick=()=>{seen.has(o.id)?seen.delete(o.id):seen.add(o.id); saveSeen(); select(o,{fly:false});};
   d.querySelectorAll('.fig').forEach(b=>b.onclick=()=>setFig(b.dataset.f));
   $('#dPrev').onclick=()=>select(seq[(idx-1+seq.length)%seq.length]);
@@ -677,9 +825,9 @@ function select(o,opt={}){
   }
   const li=document.querySelector(`.item[data-id="${o.id}"]`); if(li) li.scrollIntoView({block:'nearest'});
 }
-function close(){ sel=null; $('#detail').hidden=true; buildOrte(); renderList(); if(st.tab==='tour')renderTour(); }
-document.addEventListener('keydown',e=>{ if(e.key!=='Escape')return; const lb=document.querySelector('.lb'); if(lb){lb.remove();return;} if(sel) close(); });
-map.on('click',()=>{ if(sel) close(); });
+function close(){ if(formOpen) return cancelAdd(); sel=null; $('#detail').hidden=true; buildOrte(); renderList(); if(st.tab==='tour')renderTour(); }
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape')return; const lb=document.querySelector('.lb'); if(lb){lb.remove();return;} if(adding||formOpen){ cancelAdd(); return; } if(sel) close(); });
+map.on('click',e=>{ if(adding||formOpen){ placePin(e.latlng); return; } if(sel) close(); });
 
 /* ---------- Start ---------- */
 map.fitBounds(L.latLngBounds(O.map(o=>o.ll)).pad(.05),{paddingTopLeft:[10,10],paddingBottomRight:[10,innerWidth<=760?innerHeight*.4:10]});
@@ -690,6 +838,6 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{styleB
 new MutationObserver(()=>{styleBase();buildOrte();drawTour();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 if(location.hash==='#rundgang') setTab('tour');
 $('#loading').remove();
-initSzenen();
+initSzenen().then(updateAddUi);
 })().catch(e=>{const l=document.getElementById('loading'); if(l) l.textContent='Karte konnte nicht geladen werden: '+e.message;});
 </script>
