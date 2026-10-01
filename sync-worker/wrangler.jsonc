@@ -1,0 +1,6 @@
+{
+  "name": "4blocks-sync",
+  "main": "worker.js",
+  "compatibility_date": "2025-09-01",
+  "kv_namespaces": [{ "binding": "KV", "id": "f22db70026b943a0bc22cef96fa8f3b8" }]
+}
