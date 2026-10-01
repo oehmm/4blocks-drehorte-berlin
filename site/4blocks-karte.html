@@ -226,6 +226,11 @@ button,input,select{font:inherit;color:inherit}
 .gps #pAll>.list{order:-1;border-bottom:1px solid var(--line)}
 .add-b{gap:6px}
 .sync-b{gap:8px}
+.d-txt{display:grid;gap:6px}
+.d-txt textarea{width:100%;min-height:150px;padding:9px 11px;border:1px solid var(--line);border-radius:5px;background:var(--bg);font:14px/1.55 var(--f-body);resize:vertical}
+.tx-meta{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;font-size:12px;color:var(--ink-3)}
+.tx-meta .ed{font:500 10px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);border:1px solid color-mix(in srgb,var(--accent) 50%,transparent);border-radius:3px;padding:3px 5px}
+.tx-orig{margin:0;padding:8px 10px;border-left:3px solid var(--line);font-size:13px;color:var(--ink-2);line-height:1.5}
 .sync-b .note{margin:0}
 .sync-st{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)}
 .sync-st i{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
@@ -344,6 +349,7 @@ const saveSeen=()=>{try{localStorage.setItem('4b-seen',JSON.stringify([...seen])
 /* ---------- Karte + selbst gezeichnete Basiskarte ---------- */
 const map=L.map('map',{zoomControl:false,minZoom:12,maxZoom:18.5,zoomSnap:.5,maxBounds:[[52.435,13.32],[52.542,13.50]],maxBoundsViscosity:.8});
 L.DomEvent.disableScrollPropagation($('#detail')); L.DomEvent.disableClickPropagation($('#detail'));
+$('#detail').addEventListener('click',e=>e.stopPropagation()); // auch Klicks auf gerade ersetzte Knöpfe nicht an die Karte weitergeben
 L.control.zoom({position:innerWidth<=760?'topright':'bottomright'}).addTo(map);
 map.attributionControl.setPrefix(false).addAttribution('© OpenStreetMap-Mitwirkende');
 ['base','basetop','hl','lbl'].forEach((p,i)=>{map.createPane(p).style.zIndex=200+i*50;});
@@ -659,11 +665,12 @@ async function initSzenen(){
       snap.docs.forEach(d=>{const v=d.data(); if(v&&v.asset) SZ[d.id]={src:'/_blob/'+v.asset,asset:v.asset,folge:v.folge||''};});
       onSzChange();
     },e=>console.warn('szenen',e&&e.code));
+    dbNS.collection('texte').onSnapshot(snap=>{ for(const k in TX) delete TX[k]; snap.docs.forEach(d=>{ const v=d.data(); if(v&&typeof v.rolle==='string') TX[d.id]={rolle:v.rolle,mt:+v.at||0}; }); if(sel&&!txEditing) renderText(sel); },e=>console.warn('texte',e&&e.code));
     dbNS.collection('orte').onSnapshot(snap=>setOwn(snap.docs.map(d=>({...d.data(),id:d.id}))),e=>console.warn('orte',e&&e.code));
   } else if(!window.claude?.use){
     szMode='local';
     try{ (await idbAll()).forEach(r=>SZ[r.id]={src:URL.createObjectURL(r.blob),folge:r.folge||'',local:1,at:r.at||1,img:r.img||null}); }catch(e){ szMode='none'; }
-    setOwn(loadLocalOwn());
+    Object.assign(TX,loadTx()); setOwn(loadLocalOwn());
     onSzChange();
   }
 }
@@ -691,7 +698,7 @@ function setOwn(list){
   O.forEach((o,i)=>o.nr=i+1);
   if(sel&&!BY[sel.id]){ sel=null; if(!formOpen) $('#detail').hidden=true; } else if(sel) sel=BY[sel.id];
   updateCounts(); buildOrte(); renderList(); if(st.tab==='tour') renderTour();
-  if(sel&&!formOpen) select(sel,{fly:false});
+  if(sel&&!formOpen&&!txEditing) select(sel,{fly:false});
 }
 function updateAddUi(){ $('#addBlock').hidden=!canUpload(); if(szMode==='local') $('#addNote').textContent='Kennst du einen weiteren Drehort? Setze einen Pin und beschreibe die Szene. Eigene Orte werden nur auf diesem Gerät gespeichert.'; }
 function startAdd(){
@@ -700,7 +707,7 @@ function startAdd(){
   $('#detail').hidden=true; document.body.classList.add('adding'); $('#side').classList.remove('open');
   const bar=document.createElement('div'); bar.className='add-bar'; bar.id='addBar';
   bar.innerHTML=`<span>Tippe auf die Karte, wo gedreht wurde.</span>${me?'<button class="btn" id="abMe" type="button">Mein Standort</button>':''}<button class="btn" id="abX" type="button">Abbrechen</button>`;
-  L.DomEvent.disableClickPropagation(bar); $('#map').append(bar);
+  L.DomEvent.disableClickPropagation(bar); bar.addEventListener('click',e=>e.stopPropagation()); $('#map').append(bar);
   $('#abX').onclick=cancelAdd; if($('#abMe')) $('#abMe').onclick=()=>placePin(me.ll);
 }
 function cancelAdd(){
@@ -835,7 +842,16 @@ async function syncNow(){
       const w=rm>lm?r:l; outO[id]=w; list.push({...w,id});
     }
     saveLocalOwn(list);
-    await api('index',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({v:1,at:Date.now(),szenen:outS,orte:outO,tomb})});
+    // Bearbeitete Beschreibungen
+    const rt=R.texte||{}, LT=loadTx(), outT={};
+    for(const id of new Set([...Object.keys(LT),...Object.keys(rt)])){
+      const l=LT[id], r=rt[id], lm=l?(+l.mt||1):0, rm=r?(+r.mt||0):0, t=tomb['txt:'+id]||0;
+      if(t>=Math.max(lm,rm)) continue;
+      outT[id]=rm>lm?{rolle:String(r.rolle||''),mt:rm}:l;
+    }
+    saveTx(outT); for(const k in TX) delete TX[k]; Object.assign(TX,outT);
+    await api('index',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({v:1,at:Date.now(),szenen:outS,orte:outO,texte:outT,tomb})});
+    if(sel&&!txEditing) renderText(sel);
     saveTomb(tomb);
     for(const k in SZ){ if(SZ[k].local) URL.revokeObjectURL(SZ[k].src); delete SZ[k]; }
     (await idbAll()).forEach(r=>SZ[r.id]={src:URL.createObjectURL(r.blob),folge:r.folge||'',local:1,at:r.at||1,img:r.img||null});
@@ -892,9 +908,62 @@ function startSync(){
   setInterval(()=>{ if(syncCode&&document.visibilityState==='visible') syncNow(); },60000);
 }
 
+/* ---------- Beschreibung bearbeiten und ergänzen ---------- */
+const TX={}; let txEditing=null, txShowOrig=false;
+const loadTx=()=>{ try{ return JSON.parse(localStorage.getItem('4b-texte')||'{}'); }catch(e){ return {}; } };
+const saveTx=t=>{ try{ localStorage.setItem('4b-texte',JSON.stringify(t)); }catch(e){} };
+const rolleOf=o=>(!o.own&&TX[o.id])?TX[o.id].rolle:(o.rolle||'');
+function renderText(o,edit){
+  const el=document.getElementById('dText'); if(!el) return;
+  const t=rolleOf(o), can=canUpload(), changed=!o.own&&!!TX[o.id];
+  if(edit){
+    txEditing=o.id;
+    el.innerHTML=`<label class="fld"><span>Beschreibung – ändern oder ergänzen, z. B. weitere Szenen, Folgen, Details vom Dreh</span><textarea id="txIn" maxlength="4000">${esc(t)}</textarea></label>
+      <div class="btnrow"><button class="btn primary" id="txSave" type="button">Speichern</button><button class="btn" id="txCancel" type="button">Abbrechen</button>${changed?'<button class="btn" id="txReset" type="button">Original wiederherstellen</button>':''}</div>`;
+    const ta=$('#txIn'); ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length);
+    $('#txCancel').onclick=()=>{ txEditing=null; renderText(o); };
+    $('#txSave').onclick=()=>saveText(o,ta.value);
+    if($('#txReset')) $('#txReset').onclick=()=>resetText(o);
+    ta.onkeydown=e=>{ if(e.key==='Escape'){ e.stopPropagation(); txEditing=null; renderText(o); } if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)) saveText(o,ta.value); };
+    return;
+  }
+  if(txEditing===o.id) txEditing=null;
+  el.innerHTML=`${t?`<p class="d-text">${esc(t).replace(/\n/g,'<br>')}</p>`:''}
+    ${changed&&txShowOrig?`<p class="tx-orig"><b>Original:</b> ${esc(o.rolle)}</p>`:''}
+    ${changed||can?`<div class="tx-meta">${changed?`<span class="ed">bearbeitet</span><button class="link-btn" id="txOrig" type="button">Original ${txShowOrig?'ausblenden':'anzeigen'}</button>`:''}${can?`<button class="link-btn" id="txEdit" type="button">${t?'Beschreibung bearbeiten':'Beschreibung hinzufügen'}</button>`:''}</div>`:''}`;
+  if($('#txEdit')) $('#txEdit').onclick=()=>renderText(o,true);
+  if($('#txOrig')) $('#txOrig').onclick=()=>{ txShowOrig=!txShowOrig; renderText(o); };
+}
+async function saveText(o,val){
+  val=val.replace(/\s+$/,'').replace(/^\s+/,'');
+  const btn=$('#txSave'); if(btn){ btn.disabled=true; btn.textContent='Wird gespeichert …'; }
+  try{
+    if(o.own){
+      if(szMode==='shared') await dbNS.doc('orte/'+o.id).update({rolle:val});
+      else { const list=loadLocalOwn(), r=list.find(x=>x.id===o.id); if(r){ r.rolle=val; r.mt=Date.now(); saveLocalOwn(list); } scheduleSync(); }
+      o.rolle=val;
+    } else if(val===o.rolle){ txEditing=null; return resetText(o); }
+    else {
+      const mt=Date.now();
+      if(szMode==='shared') await dbNS.doc('texte/'+o.id).set({rolle:val,at:mt});
+      else { const t=loadTx(); t[o.id]={rolle:val,mt}; saveTx(t); scheduleSync(); }
+      TX[o.id]={rolle:val,mt};
+    }
+    txEditing=null; renderText(o); toast('Beschreibung gespeichert');
+  }catch(e){ toast(errText(e)); if(btn){ btn.disabled=false; btn.textContent='Speichern'; } }
+}
+async function resetText(o){
+  try{
+    if(szMode==='shared') await dbNS.doc('texte/'+o.id).delete();
+    else { const t=loadTx(); delete t[o.id]; saveTx(t); addTomb('txt:'+o.id); scheduleSync(); }
+    delete TX[o.id]; txEditing=null; txShowOrig=false; renderText(o); toast('Originaltext wiederhergestellt');
+  }catch(e){ toast(errText(e)); }
+}
+
 function currentSeq(){return st.tab==='tour'?D.tour.ids.map(i=>BY[i]):listSeq();}
 function select(o,opt={}){
   if(formOpen||adding) return;
+  txEditing=null; if(sel!==o) txShowOrig=false;
   sel=o; buildOrte(); renderList(); if(st.tab==='tour')renderTour();
   const c=col(o), seq=currentSeq(), idx=seq.indexOf(o);
   const gm='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(o.adr?o.adr.replace(/\s*\(.*?\)/,''):o.p[1]+','+o.p[0]);
@@ -904,7 +973,7 @@ function select(o,opt={}){
     <div class="d-top"><span class="d-kat"><span class="dot"></span>${st.tab==='tour'?'Station '+num(o):o.nr} · ${esc(KAT[o.kat][0])} · ${esc(o.kiez)}${o.own?' · Eigener Eintrag':''}</span></div>
     <h2 class="d-title">${esc(o.n)}</h2>
     ${o.adr?`<div class="d-addr"><span id="dAdr">${esc(o.adr)}</span><button class="copy" id="dCopy">kopieren</button></div>`:''}
-    ${o.rolle?`<p class="d-text">${esc(o.rolle)}</p>`:''}
+    <div id="dText" class="d-txt"></div>
     ${o.tipp?`<p class="tip"><b>Vor Ort:</b> ${esc(o.tipp)}</p>`:''}
     <dl class="meta">
       ${o.st?`<dt>Anfahrt</dt><dd>${stationHtml(o.st)}</dd>`:''}
@@ -924,7 +993,7 @@ function select(o,opt={}){
   </div>
   <div class="d-nav"><button id="dPrev">← zurück</button><span>${idx+1} / ${seq.length}</span><button id="dNext">weiter →</button></div>`;
   $('#dClose').onclick=close;
-  renderSzene(o);
+  renderSzene(o); renderText(o);
   if(o.own&&canUpload()){ $('#oEdit').onclick=()=>openForm(o);
     const od=$('#oDel'); od.onclick=()=>{ if(od.dataset.c) return deleteOwn(o); od.dataset.c='1'; od.textContent='Wirklich löschen?'; setTimeout(()=>{ if(od.isConnected){ delete od.dataset.c; od.textContent='Löschen'; } },4000); }; }
   if($('#dCopy')) $('#dCopy').onclick=async e=>{const t=o.adr; try{await navigator.clipboard.writeText(t); e.target.textContent='kopiert';}catch(_){const r=document.createRange(); r.selectNodeContents($('#dAdr')); const s=getSelection(); s.removeAllRanges(); s.addRange(r);}};
