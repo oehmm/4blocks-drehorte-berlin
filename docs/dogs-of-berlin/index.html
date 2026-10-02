@@ -1,6 +1,21 @@
+<!doctype html>
+<html lang="de">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>4 Blocks Drehorte Berlin</title>
+<meta name="description" content="Die Berliner Drehorte der Netflix-Serie Dogs of Berlin auf einer Karte, mit Fotos und Figuren.">
+<meta name="theme-color" content="#121417">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dogs of Berlin">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+<title>Dogs of Berlin Drehorte</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:ital,wdth,wght@0,62..125,400;0,62..125,500;0,62..125,600;1,62..125,400&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -1182,3 +1197,11 @@ $('#loading').remove();
 initSzenen().then(()=>{ updateAddUi(); startSync(); if('caches' in window) offlineCheck().catch(()=>{}); });
 })().catch(e=>{const l=document.getElementById('loading'); if(l) l.textContent='Karte konnte nicht geladen werden: '+e.message;});
 </script>
+
+<script>if('serviceWorker' in navigator&&location.protocol==='https:'){
+  const had=!!navigator.serviceWorker.controller; let done=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(had&&!done){ done=true; location.reload(); } });
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>{ r.update(); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') r.update().catch(()=>{}); }); }).catch(()=>{}));
+}</script>
+</body>
+</html>

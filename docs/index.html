@@ -1184,7 +1184,7 @@ document.addEventListener('keydown',e=>{ if(e.key!=='Escape')return; const lb=do
 map.on('click',e=>{ if(adding||formOpen){ placePin(e.latlng); return; } if(sel) close(); });
 
 /* ---------- Start ---------- */
-map.fitBounds(L.latLngBounds(O.filter(o=>o.kat!=='umland').map(o=>o.ll)).pad(.05),{paddingTopLeft:[10,10],paddingBottomRight:[10,innerWidth<=760?innerHeight*.4:10]});
+map.fitBounds(L.latLngBounds(O.filter(o=>o.kat!=='umland').map(o=>o.ll)).pad(.12),{paddingTopLeft:[10,10],paddingBottomRight:[10,innerWidth<=760?innerHeight*.4:10]});
 map.on('zoomend',()=>{styleBase();drawLabels();buildOrte();});
 map.on('moveend',drawLabels);
 styleBase(); drawLabels(); refresh();

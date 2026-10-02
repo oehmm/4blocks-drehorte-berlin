@@ -9,8 +9,9 @@ for o in SER.ORTE:
     if typ in('street','area'): names.add(arg)
     if typ=='corner': names.update(arg.split('|'))
 rx='^('+'|'.join(n.replace('(','\\(').replace(')','\\)') for n in sorted(names))+')$' if names else '^$'
+RC=M.get('road_classes','motorway|trunk|primary|secondary|tertiary|residential|unclassified|living_street|motorway_link|trunk_link|primary_link|pedestrian')
 Q={
-'roads':f'way["highway"~"^(motorway|trunk|primary|secondary|tertiary|residential|unclassified|living_street|motorway_link|trunk_link|primary_link|pedestrian)$"]({B});',
+'roads':f'way["highway"~"^({RC})$"]({B});',
 'green':f'(way["leisure"~"park|garden"]({B});relation["leisure"="park"]({B});way["landuse"~"cemetery|grass|allotments|forest|recreation_ground"]({B});way["natural"="wood"]({B}););',
 'water':f'(way["natural"="water"]({B});relation["natural"="water"]({B});way["waterway"~"river|canal"]({B}););',
 'rail':f'way["railway"~"^(rail|subway|light_rail)$"]["tunnel"!="yes"]({B});',
