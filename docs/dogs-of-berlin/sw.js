@@ -1,5 +1,5 @@
 // Offline-Speicher: Seite aus dem Netz (Fallback Cache), Daten und Fotos aus dem Cache.
-const VERSION = '20261002123933';
+const VERSION = '20261002123949';
 const CORE = ['./', 'index.html', 'basiskarte.json', 'drehorte.json', 'manifest.webmanifest', 'icon-192.png', "fotos/bierpinsel.jpg","fotos/lokdepot.jpg","fotos/marzahn.jpg","fotos/olfe.jpg","fotos/olympiastadion.jpg"];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open('core-' + VERSION).then(c => Promise.all(CORE.map(u => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));
