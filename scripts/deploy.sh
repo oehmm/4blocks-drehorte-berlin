@@ -1,9 +1,12 @@
 #!/bin/sh
-# Baut die Handy-Version neu und veröffentlicht sie über GitHub Pages (Ordner docs/).
+# Handy-Versionen aller Serien neu zusammensetzen und über GitHub Pages (Ordner docs/) veröffentlichen.
 set -e
 cd "$(dirname "$0")/.."
-python3 scripts/assemble.py
+for d in serien/*/; do
+  slug=$(basename "$d"); [ "$slug" = "_vorlage" ] && continue
+  SERIE="$slug" python3 scripts/assemble.py
+done
 git add -A
-git commit -m "4 Blocks Karte aktualisieren" || echo "Keine Änderungen."
+git commit -m "Karten aktualisieren" || echo "Keine Änderungen."
 git push
 echo "Live in 1–2 Minuten: https://oehmm.github.io/4blocks-drehorte-berlin/"

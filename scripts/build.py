@@ -1,18 +1,27 @@
-import json,math,collections,sys
-sys.path.insert(0,'scripts'); from orte import ORTE,FIG,KAT,TOUR,S
-exec(open('scripts/_ref_base.py').read().split('out={}')[0].replace('48.14','52.49'))  # dp/simp/rings/polys helpers
-def load(n): return json.load(open(f'osm/{n}.json'))['elements']
+# Basiskarte (out/basiskarte.json) und Drehort-Daten (out/drehorte.json) einer Serie bauen.
+# Aufruf: SERIE=<slug> python3 scripts/build.py
+import json,math,collections,sys,os,glob
+from serie_ctx import ctx
+SLUG,DIR,SER=ctx(); M=SER.META
+ORTE,FIG,KAT,TOUR,S=SER.ORTE,SER.FIG,SER.KAT,getattr(SER,'TOUR',[]),SER.S
+import geo; geo.set_lat(M.get('lat',52.5)); from geo import *
+import route; route.set_lat(M.get('lat',52.5))
+def load(n): return json.load(open(f'osm/{n}.json'))['elements'] if os.path.exists(f'osm/{n}.json') else []
+def extras(kind): return [e for f in sorted(glob.glob(f'osm/x*_{kind}.json')) for e in json.load(open(f))['elements']]
+# eigene Einträge, die übernommen wurden (scripts/import_eigene.py)
+EIG=json.load(open('eigene.json')) if os.path.exists('eigene.json') else {'orte':[],'texte':{}}
 out={}
-out['green']=polys(load('green'),4,1500)
+blm=extras('misc')
+out['green']=polys(load('green')+[e for e in blm if 'railway' not in e['tags'] and e['tags'].get('natural')!='water'],4,1500)
 wat=load('water')
-out['water']=polys([e for e in wat if e['tags'].get('natural')=='water'],3,400)
+out['water']=polys([e for e in wat+blm if e['tags'].get('natural')=='water'],3,400)
 out['rivers']=[simp(e['geometry'],3) for e in wat if e['type']=='way' and e['tags'].get('waterway') in('river','canal') and 'geometry' in e]
 rl=load('rail')
-out['rail']=[simp(e['geometry'],4) for e in rl if 'geometry' in e and e['tags'].get('railway') in('rail','light_rail')]
+out['rail']=[simp(e['geometry'],4) for e in rl+blm if 'geometry' in e and e['tags'].get('railway') in('rail','light_rail')]
 out['ubahn']=[simp(e['geometry'],4) for e in rl if 'geometry' in e and e['tags'].get('railway')=='subway']
 CL={'motorway':'major','trunk':'major','primary':'major','motorway_link':'major','trunk_link':'major','primary_link':'major','secondary':'secondary','tertiary':'tertiary'}
 roads=collections.defaultdict(list); labels=[]; RANK={'major':3,'secondary':2,'tertiary':2,'minor':1}; seen=set()
-for e in load('roads'):
+for e in load('roads')+extras('roads'):
     g=e.get('geometry')
     if not g: continue
     c=CL.get(e['tags']['highway'],'minor')
@@ -65,39 +74,44 @@ def byname(n,typ=None):
 def mid(lines):
     pts=[p for l in lines for p in l]; xs=sorted(p[0] for p in pts); ys=sorted(p[1] for p in pts)
     c=(xs[len(xs)//2],ys[len(ys)//2]); return min(pts,key=lambda p:(p[0]-c[0])**2+(p[1]-c[1])**2)
-CLIP={'Sonnenallee':lambda lo,la:lo<13.462,'Karl-Marx-Straße':lambda lo,la:True,'Hermannstraße':lambda lo,la:True}
 res=[]
-for o in ORTE:
-    typ,arg=o['geo'].split(':',1); r=dict(o); del r['geo']; r['q']=[S[k] for k in o['q']]
+for o in ORTE+EIG['orte']:
+    typ,arg=o['geo'].split(':',1); r=dict(o); del r['geo']; r.pop('clip',None); r.pop('geocode',None)
+    r['q']=[S[k] if isinstance(k,str) else k for k in o.get('q',[])]
+    if o['id'] in EIG['texte']: r['rolle']=EIG['texte'][o['id']]
     if typ=='pt':
         la,lo,_=geo[arg]; r['p']=[round(lo,5),round(la,5)]
     elif typ=='street':
-        ls=[[(p['lon'],p['lat']) for p in e['geometry'] if CLIP[arg](p['lon'],p['lat'])] for e in byname(arg,'street')]
+        lo0,lo1=(o.get('clip') or [None,None]); inside=lambda lo:(lo0 is None or lo>=lo0) and (lo1 is None or lo<=lo1)
+        ls=[[(p['lon'],p['lat']) for p in e['geometry'] if inside(p['lon'])] for e in byname(arg,'street')]
         ls=[l for l in ls if len(l)>1]
         r['line']=[[v for x,y in l for v in (round(x,5),round(y,5))] for l in ls]; x,y=mid(ls); r['p']=[round(x,5),round(y,5)]
     elif typ=='area':
         es=byname(arg)
         if not es: print('MISSING',arg); continue
-        if arg=='Michael-Bohnen-Ring':
-            ls=[[(p['lon'],p['lat']) for p in e['geometry']] for e in es if 'geometry' in e]; x,y=mid(ls)
-            r['p']=[round(x,5),round(y,5)]; r['radius']=180
-        else:
-            pp=polys([e for e in es if 'highway' not in e['tags']],2,1000); big=max(pp,key=lambda p:len(p[0]))
-            r['poly']=big; xs=big[0][0::2]; ys=big[0][1::2]; r['p']=[round(sum(xs)/len(xs),5),round(sum(ys)/len(ys),5)]
+        pp=polys([e for e in es if 'highway' not in e['tags']],2,1000); big=max(pp,key=lambda p:len(p[0]))
+        r['poly']=big; xs=big[0][0::2]; ys=big[0][1::2]; r['p']=[round(sum(xs)/len(xs),5),round(sum(ys)/len(ys),5)]
     elif typ=='corner':
         a,b=arg.split('|')
         na={(p['lon'],p['lat']) for e in byname(a,'street') for p in e['geometry']}
         nb={(p['lon'],p['lat']) for e in byname(b,'street') for p in e['geometry']}
         x,y=next(iter(na&nb)); r['p']=[round(x,5),round(y,5)]
+    elif typ=='xy':
+        lo,la=map(float,arg.split(',')); r['p']=[round(lo,6),round(la,6)]
     res.append(r); print(o['id'],r['p'])
-# Tour: Fußweg-Luftlinie + Distanz
-def dist(a,b): return math.hypot((a[0]-b[0])*K,a[1]-b[1])*111000
-by={r['id']:r for r in res}; legs=[round(dist(by[a]['p'],by[b]['p'])) for a,b in zip(TOUR,TOUR[1:])]
-PH=json.load(open('raw/photos.json'))
+# Rundgang: echte Fußwege (osm/walk.json), sonst Luftlinie
+def dist(a,b): return math.hypot((a[0]-b[0])*geo.K,a[1]-b[1])*111320
+by={r['id']:r for r in res}
+if TOUR and os.path.exists('osm/walk.json'): rl_=route.route([by[i]['p'] for i in TOUR]); real=True
+else: rl_=[{'m':round(dist(by[a]['p'],by[b]['p'])),'line':by[a]['p']+by[b]['p']} for a,b in zip(TOUR,TOUR[1:])]; real=False
+def simpline(a):
+    g=[{'lon':a[i],'lat':a[i+1]} for i in range(0,len(a),2)]; return simp(g,1.5)
+PH=json.load(open('raw/photos.json')) if os.path.exists('raw/photos.json') else {}
 for r in res:
     f=PH.get(r['id'])
     if f: r['foto']={'src':'fotos/'+r['id']+'.jpg','by':f['artist'] or 'unbekannt','lic':f['lic'],'page':f['page'],'exact':f['exact']}
-data={'orte':res,'fig':FIG,'kat':KAT,'tour':{'ids':TOUR,'legs':legs}}
-json.dump(out,open('site/basiskarte.json','w'),separators=(',',':'),ensure_ascii=False)
-json.dump(data,open('site/drehorte.json','w'),separators=(',',':'),ensure_ascii=False)
+meta={k:v for k,v in M.items() if k not in('bbox','extra_bboxes','walk_bbox','root')}
+data={'serie':meta,'orte':res,'fig':FIG,'kat':KAT,'tour':{'ids':TOUR,'legs':[l['m'] for l in rl_],'lines':[simpline(l['line']) for l in rl_] if real else None,'real':real}}
+json.dump(out,open('out/basiskarte.json','w'),separators=(',',':'),ensure_ascii=False)
+json.dump(data,open('out/drehorte.json','w'),separators=(',',':'),ensure_ascii=False)
 for k,v in out.items(): print(k, len(v) if not isinstance(v,dict) else {a:len(b) for a,b in v.items()})

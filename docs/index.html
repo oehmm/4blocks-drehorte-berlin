@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Die Berliner Drehorte der Serie 4 Blocks auf einer Karte.">
+<meta name="description" content="Die Berliner Drehorte der Serie 4 Blocks auf einer Karte, mit Szenen, Fotos und Neukölln-Rundgang.">
 <meta name="theme-color" content="#121417">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,7 +31,7 @@
   --accent:#F0A63A; --accent-ink:#F6BE6A; --accent-soft:rgba(240,166,58,.14); --focus:#8DB8FF; --on-accent:#1A1206;
   --land:#16191D; --block:#1B1F24; --water:#16303A; --green:#18261D; --road:#2A2F36; --road-case:#101215; --road-major:#3A3A33; --rail:#3C424A; --ubahn:#2F4C7A;
   --bezirk:#586069; --label:#8E949B; --label-halo:rgba(18,20,23,.92);
-  --k-clan:#F0A63A; --k-revier:#4FC2A4; --k-justiz:#6E9BF0; --k-glamour:#E07AB8; --k-kiez:#D9C29A;
+  --k-clan:#F0A63A; --k-revier:#4FC2A4; --k-justiz:#6E9BF0; --k-glamour:#E07AB8; --k-kiez:#D9C29A; --k-umland:#9FB0C4;
   --bvg-u:#1C5FB8; --bvg-s:#3A8A3E; --ok:#63C57E; --me:#5AA2FF;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.5);
   --f-display:"Anton","Impact","Haettenschweiler","Arial Narrow Bold",sans-serif;
@@ -45,7 +45,7 @@
     --accent:#B86A00; --accent-ink:#8F5200; --accent-soft:rgba(184,106,0,.12); --focus:#1F5FC4; --on-accent:#FFFFFF;
     --land:#E4E2DC; --block:#DCD9D2; --water:#AFCBD6; --green:#CBDBC0; --road:#FFFFFF; --road-case:#C9C6BE; --road-major:#FBEBC8; --rail:#A6A9A3; --ubahn:#7E9BC9;
     --bezirk:#8D9197; --label:#5A5F66; --label-halo:rgba(228,226,220,.92);
-    --k-clan:#C27A06; --k-revier:#15876B; --k-justiz:#2F63C4; --k-glamour:#B63E86; --k-kiez:#8A6E3E;
+    --k-clan:#C27A06; --k-revier:#15876B; --k-justiz:#2F63C4; --k-glamour:#B63E86; --k-kiez:#8A6E3E; --k-umland:#55677D;
     --ok:#2F8A4E; --me:#1F6FEB;
     --shadow:0 1px 2px rgba(20,20,20,.08),0 10px 26px rgba(20,20,20,.12);
   }
@@ -56,7 +56,7 @@
   --accent:#B86A00; --accent-ink:#8F5200; --accent-soft:rgba(184,106,0,.12); --focus:#1F5FC4; --on-accent:#FFFFFF;
   --land:#E4E2DC; --block:#DCD9D2; --water:#AFCBD6; --green:#CBDBC0; --road:#FFFFFF; --road-case:#C9C6BE; --road-major:#FBEBC8; --rail:#A6A9A3; --ubahn:#7E9BC9;
   --bezirk:#8D9197; --label:#5A5F66; --label-halo:rgba(228,226,220,.92);
-  --k-clan:#C27A06; --k-revier:#15876B; --k-justiz:#2F63C4; --k-glamour:#B63E86; --k-kiez:#8A6E3E;
+  --k-clan:#C27A06; --k-revier:#15876B; --k-justiz:#2F63C4; --k-glamour:#B63E86; --k-kiez:#8A6E3E; --k-umland:#55677D;
   --ok:#2F8A4E; --me:#1F6FEB;
   --shadow:0 1px 2px rgba(20,20,20,.08),0 10px 26px rgba(20,20,20,.12);
 }
@@ -94,8 +94,8 @@ button,input,select{font:inherit;color:inherit}
 .chip.fig[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
 .chip.fig[aria-pressed="false"]{opacity:1;background:transparent}
 
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--panel-2);border-radius:6px;padding:3px}
-.tab{border:0;background:none;border-radius:4px;padding:7px 4px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.tabs{display:flex;gap:2px;background:var(--panel-2);border-radius:6px;padding:3px}
+.tab{flex:1 1 0;min-width:0;border:0;background:none;border-radius:4px;padding:7px 4px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
 .tab[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.2)}
 
 .list{list-style:none;margin:0;padding:6px 0 18px}
@@ -240,6 +240,32 @@ button,input,select{font:inherit;color:inherit}
 .gps #pAll{display:flex;flex-direction:column}
 .gps #pAll>.list{order:-1;border-bottom:1px solid var(--line)}
 .add-b{gap:6px}
+.figs-grid{list-style:none;margin:0;padding:6px 0 18px;display:grid}
+.fcard{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:11px 20px;cursor:pointer}
+.fcard:hover{background:var(--panel-2)}
+.fav{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-ink);font:400 18px/1 var(--f-display)}
+.fcard b{display:block;font-weight:600}
+.fcard small{display:block;color:var(--ink-2);font-size:12.5px}
+.fcard .cnt{font:500 11px var(--f-mono);color:var(--ink-3);white-space:nowrap}
+.fprof{padding:14px 20px;display:grid;gap:10px;border-bottom:1px solid var(--line)}
+.fprof h2{margin:0;font:400 30px/1 var(--f-display);text-transform:uppercase;text-wrap:balance}
+.fprof .act{font:500 12.5px var(--f-mono);color:var(--accent-ink)}
+.fprof p{margin:0;color:var(--ink-2);font-size:13.5px;line-height:1.55}
+.navbar{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:1040;width:min(440px,calc(100% - 28px));background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:10px 12px;display:grid;gap:8px}
+.navbar .nv-top{display:flex;align-items:center;gap:10px}
+.navbar .nv-top .pin{flex:none}
+.navbar .nv-t{min-width:0;flex:1}
+.navbar .nv-t b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navbar .nv-t small{display:block;color:var(--ink-2);font-size:12px}
+.navbar .nv-d{font:400 22px/1 var(--f-display);color:var(--me);white-space:nowrap}
+.navbar .btnrow .btn{padding:5px 10px;font-size:12px}
+.nv-prog{height:4px;border-radius:2px;background:var(--panel-2);overflow:hidden}
+.nv-prog i{display:block;height:100%;background:var(--ok)}
+.detail:not([hidden])~.navbar{display:none}
+.navbar~.toast{top:132px}
+.off-st{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)}
+.off-st i{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none}
+.off-st.ok i{background:var(--ok)}
 .sync-b{gap:8px}
 .d-txt{display:grid;gap:6px}
 .d-txt textarea{width:100%;min-height:150px;padding:9px 11px;border:1px solid var(--line);border-radius:5px;background:var(--bg);font:14px/1.55 var(--f-body);resize:vertical}
@@ -307,16 +333,18 @@ button,input,select{font:inherit;color:inherit}
       <div class="brand">
         <div class="eyebrow">TNT Serie · 2017–2019 · Berlin</div>
         <h1>4 Blocks <span>Drehorte</span></h1>
-        <p><b id="nOrte">17</b> Schauplätze der Clan-Serie um Toni Hamady, von der Sonnenallee bis zur JVA Moabit.</p>
+        <p><b id="nOrte">18</b> <span id="introTxt">Schauplätze der Clan-Serie um Toni Hamady, von der Sonnenallee bis nach Brieselang.</span></p>
       </div>
       <div class="tabs" role="tablist" aria-label="Ansicht">
         <button class="tab" role="tab" id="tabAll" data-tab="all" aria-selected="true">Alle Drehorte</button>
         <button class="tab" role="tab" id="tabTour" data-tab="tour" aria-selected="false">Neukölln-Rundgang</button>
+        <button class="tab" role="tab" id="tabFig" data-tab="fig" aria-selected="false">Figuren</button>
       </div>
     </div>
     <div class="side-body" id="sideBody">
       <div id="pAll">
         <div class="block sync-b" id="syncBlock" hidden></div>
+        <div class="block sync-b" id="offBlock" hidden></div>
         <div class="block add-b" id="addBlock" hidden>
           <button class="btn primary" id="addBtn" type="button">+ Drehort hinzufügen</button>
           <p class="note" id="addNote">Kennst du einen weiteren Drehort? Setze einen Pin und beschreibe die Szene.</p>
@@ -332,9 +360,10 @@ button,input,select{font:inherit;color:inherit}
         <ul class="list" id="list"></ul>
       </div>
       <div id="pTour" hidden></div>
+      <div id="pFig" hidden></div>
       <div class="src">
-        <span>Drehorte nach <a href="https://mitvergnuegen.com/2018/11-drehorte-aus-4-blocks-die-ihr-besuchen-koennt" target="_blank" rel="noopener">Mit Vergnügen</a>, <a href="https://sbahn.berlin/was-hast-du-vor/neues-entdecken/artikel/4-blocks-diese-drehorte-muesst-ihr-kennen/" target="_blank" rel="noopener">S-Bahn Berlin</a> und <a href="https://yovie.de/drehorte-berlin/" target="_blank" rel="noopener">yovie</a>. Kartengrundlage © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende (ODbL).</span>
-        <span>Einige Orte sind Privathäuser oder Wohnsiedlungen. Bitte nur von der Straße aus ansehen und die Bewohner in Ruhe lassen.</span>
+        <span id="srcTxt">Drehorte nach <a href="https://mitvergnuegen.com/2018/11-drehorte-aus-4-blocks-die-ihr-besuchen-koennt" target="_blank" rel="noopener">Mit Vergnügen</a>, <a href="https://sbahn.berlin/was-hast-du-vor/neues-entdecken/artikel/4-blocks-diese-drehorte-muesst-ihr-kennen/" target="_blank" rel="noopener">S-Bahn Berlin</a> und <a href="https://yovie.de/drehorte-berlin/" target="_blank" rel="noopener">yovie</a>. Kartengrundlage © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende (ODbL).</span>
+        <span id="noteTxt">Einige Orte sind Privathäuser oder Wohnsiedlungen. Bitte nur von der Straße aus ansehen und die Bewohner in Ruhe lassen.</span>
       </div>
     </div>
   </aside>
@@ -350,7 +379,17 @@ button,input,select{font:inherit;color:inherit}
 const $=s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const [BASE,D]=await Promise.all(['basiskarte.json','drehorte.json'].map(f=>fetch(f).then(r=>r.json())));
-const O=D.orte, KAT=D.kat, FIG=D.fig;
+const O=D.orte, KAT=D.kat, FIG=D.fig, META=D.serie||{};
+const P=META.store||'4b';
+if(META.title) document.title=META.title;
+if(META.h1) $('.brand h1').innerHTML=esc(META.h1)+' <span>'+esc(META.h1b||'Drehorte')+'</span>';
+if(META.eyebrow) $('.eyebrow').textContent=META.eyebrow;
+if(META.intro) $('#introTxt').textContent=META.intro;
+if(META.tourTab) $('#tabTour').textContent=META.tourTab;
+if(!D.tour||!D.tour.ids.length) $('#tabTour').hidden=true;
+if(META.sources) $('#srcTxt').innerHTML='Drehorte nach '+META.sources.map(s=>`<a href="${esc(s[1])}" target="_blank" rel="noopener">${esc(s[0])}</a>`).join(', ')+'. Kartengrundlage © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende (ODbL).';
+if(META.note) $('#noteTxt').textContent=META.note;
+const CREDIT=META.credit||'4 Blocks (TNT Serie / Wiedemann &amp; Berg Television)', SERIE_N=META.short||'4 Blocks';
 O.forEach((o,i)=>{o.nr=i+1; o.ll=L.latLng(o.p[1],o.p[0]); o.isLine=!!o.line;});
 const NFIX=O.length;
 const BY={}; O.forEach(o=>BY[o.id]=o);
@@ -358,11 +397,11 @@ $('#nOrte').textContent=O.length;
 
 /* besucht-Häkchen: nur im Browser dieses Besuchers */
 let seen=new Set();
-try{seen=new Set(JSON.parse(localStorage.getItem('4b-seen')||'[]'));}catch(e){}
-const saveSeen=()=>{try{localStorage.setItem('4b-seen',JSON.stringify([...seen]));}catch(e){}};
+try{seen=new Set(JSON.parse(localStorage.getItem(P+'-seen')||'[]'));}catch(e){}
+const saveSeen=()=>{try{localStorage.setItem(P+'-seen',JSON.stringify([...seen]));}catch(e){}};
 
 /* ---------- Karte + selbst gezeichnete Basiskarte ---------- */
-const map=L.map('map',{zoomControl:false,minZoom:12,maxZoom:18.5,zoomSnap:.5,maxBounds:[[52.435,13.32],[52.542,13.50]],maxBoundsViscosity:.8});
+const map=L.map('map',{zoomControl:false,minZoom:12,maxZoom:18.5,zoomSnap:.5,maxBounds:META.maxBounds||[[52.435,12.95],[52.60,13.50]],maxBoundsViscosity:.8});
 L.DomEvent.disableScrollPropagation($('#detail')); L.DomEvent.disableClickPropagation($('#detail'));
 $('#detail').addEventListener('click',e=>e.stopPropagation()); // auch Klicks auf gerade ersetzte Knöpfe nicht an die Karte weitergeben
 L.control.zoom({position:innerWidth<=760?'topright':'bottomright'}).addTo(map);
@@ -409,7 +448,7 @@ const HL=new Set(O.filter(o=>o.isLine).map(o=>o.n));
 const bvg=t=>t==='SU'?'<i class="bvg su">S U</i>':t==='S'?'<i class="bvg s">S</i>':'<i class="bvg">U</i>';
 const stnMerged={}; (BASE.stations||[]).forEach(s=>{const k=s[2]; if(stnMerged[k]){stnMerged[k][3]=stnMerged[k][3]===s[3]?s[3]:'SU';} else stnMerged[k]=s.slice();});
 const STN=Object.values(stnMerged);
-const SHOWBEZ=new Set(['Neukölln','Friedrichshain-Kreuzberg','Mitte','Tempelhof-Schöneberg']);
+const SHOWBEZ=new Set(META.admin_label||BASE.bezirke.map(b=>b.n));
 function drawLabels(){
   lblLayer.clearLayers(); const z=map.getZoom(), bnd=map.getBounds().pad(.1);
   if(z<14) BASE.bezirke.filter(b=>SHOWBEZ.has(b.n)).forEach(b=>lblLayer.addLayer(divLabel([b.c[1],b.c[0]],'<span>'+esc(b.n)+'</span>','lbl-bezirk')));
@@ -449,6 +488,7 @@ function buildOrte(){
 }
 function visible(o){
   if(st.tab==='tour') return D.tour.ids.includes(o.id);
+  if(st.tab==='fig') return st.figSel?o.fig.includes(st.figSel):true;
   if(!st.kats.has(o.kat)) return false;
   if(st.fig&&!o.fig.includes(st.fig)) return false;
   return true;
@@ -520,7 +560,8 @@ function onPos(pos){
     lastListAt=me.ll; renderList(); if(st.tab==='tour') renderTour();
     const dd=document.getElementById('dDist'); if(sel&&dd) dd.innerHTML=distHtml(sel); else if(sel) select(sel,{fly:false});
   }
-  const fresh=me.acc>150?[]:O.filter(o=>!alerted.has(o.id)&&distTo(o)<NEAR_M);
+  if(nav){ const t=BY[D.tour.ids[nav.idx]]; if(t&&me.acc<=150&&distTo(t)<NEAR_M) arrive(); else { renderNav(); drawTour(); } }
+  const fresh=me.acc>150?[]:O.filter(o=>!alerted.has(o.id)&&distTo(o)<NEAR_M&&!(nav&&D.tour.ids.includes(o.id)));
   if(fresh.length){ fresh.forEach(o=>alerted.add(o.id)); toast((fresh.length>1?'Du bist an den Drehorten: ':'Du bist am Drehort: ')+fresh.map(o=>o.n).join(', '));
     try{navigator.vibrate&&navigator.vibrate([120,60,120]);}catch(_){} }
 }
@@ -534,7 +575,7 @@ $('#kats').onclick=e=>{const b=e.target.closest('.chip'); if(!b)return; const k=
   refresh();};
 $('#katAll').onclick=()=>{st.kats=new Set(Object.keys(KAT));refresh();};
 const figN={}; O.forEach(o=>o.fig.forEach(f=>figN[f]=(figN[f]||0)+1));
-$('#figs').innerHTML=Object.keys(FIG).filter(f=>figN[f]).map(f=>`<button class="chip fig" data-f="${f}" aria-pressed="false" title="${esc(FIG[f])}">${esc(f)} <span class="n">${figN[f]}</span></button>`).join('');
+$('#figs').innerHTML=Object.keys(FIG).filter(f=>figN[f]).map(f=>`<button class="chip fig" data-f="${f}" aria-pressed="false" title="${esc(FIG[f].name+' · '+FIG[f].actor)}">${esc(f)} <span class="n">${figN[f]}</span></button>`).join('');
 $('#figs').onclick=e=>{const b=e.target.closest('.chip'); if(!b)return; setFig(st.fig===b.dataset.f?null:b.dataset.f);};
 $('#figAll').onclick=()=>setFig(null);
 function setFig(f){st.fig=f; if(st.tab!=='all')setTab('all'); refresh();}
@@ -552,26 +593,100 @@ function renderList(){
   $('#list').innerHTML=v.length?hd+v.map(o=>itemHtml(o)).join(''):'<li class="empty">Kein Drehort passt zu dieser Auswahl.</li>';
 }
 function fmtM(m){return m>=1000?(m/1000).toFixed(1).replace('.',',')+' km':Math.round(m/10)*10+' m';}
+const legM=i=>D.tour.real?D.tour.legs[i]:D.tour.legs[i]*1.3;
+const walkMin=m=>Math.max(1,Math.round(m/80)); // 4,8 km/h
 function renderTour(){
-  const ids=D.tour.ids, legs=D.tour.legs, tot=legs.reduce((a,b)=>a+b,0)*1.3; // Luftlinie → Fußweg grob ×1,3
+  const ids=D.tour.ids, legs=D.tour.legs, tot=legs.reduce((a,_,i)=>a+legM(i),0);
   const seenN=ids.filter(i=>seen.has(i)).length;
-  $('#pTour').innerHTML=`<div class="tour-h"><h2>Durch Tonis Revier</h2>
-    <p>Ein Spaziergang vom Rathaus Neukölln über Sonnenallee, Weserkiez und Estrel bis zur High-Deck-Siedlung. Start an der U7 Rathaus Neukölln, Ende an der S Köllnische Heide.</p>
-    <div class="stats"><div><b>${ids.length}</b><span>Stationen</span></div><div><b>${(tot/1000).toFixed(1).replace('.',',')}</b><span>km zu Fuß, ca.</span></div><div><b>${Math.round(tot/1000/4.5*60/5)*5+ids.length*5}</b><span>Minuten mit Stopps</span></div><div><b>${seenN}/${ids.length}</b><span>besucht</span></div></div>
-    </div><ul class="list">${ids.map((id,i)=>itemHtml(BY[id],i<legs.length?`<li class="leg">↓ ${fmtM(legs[i]*1.3)} zu Fuß</li>`:'')).join('')}</ul>`;
+  $('#pTour').innerHTML=`<div class="tour-h"><h2>${esc(META.tourTitle||'Durch Tonis Revier')}</h2>
+    <p>${esc(META.tourIntro||'Ein Spaziergang vom Rathaus Neukölln über Sonnenallee, Weserkiez und Estrel bis zur High-Deck-Siedlung. Start an der U7 Rathaus Neukölln, Ende an der S Köllnische Heide.')}</p>
+    <div class="stats"><div><b>${ids.length}</b><span>Stationen</span></div><div><b>${(tot/1000).toFixed(1).replace('.',',')}</b><span>km Fußweg</span></div><div><b>${Math.round((walkMin(tot)+ids.length*6)/5)*5}</b><span>Minuten mit Stopps</span></div><div><b>${seenN}/${ids.length}</b><span>besucht</span></div></div>
+    <div class="btnrow">${nav?'<button class="btn" id="navStop" type="button">Navigation beenden</button>':`<button class="btn primary" id="navStart" type="button">${seenN&&seenN<ids.length?'Rundgang fortsetzen':'Rundgang starten'}</button>`}${seenN?'<button class="btn" id="tourReset" type="button">Häkchen zurücksetzen</button>':''}</div>
+    </div><ul class="list">${ids.map((id,i)=>itemHtml(BY[id],i<legs.length?`<li class="leg">↓ ${fmtM(legM(i))} Fußweg · ca. ${walkMin(legM(i))} Min.</li>`:'')).join('')}</ul>`;
+  if($('#navStart')) $('#navStart').onclick=startNav;
+  if($('#navStop')) $('#navStop').onclick=stopNav;
+  const tr=$('#tourReset'); if(tr) tr.onclick=()=>{ if(tr.dataset.c){ ids.forEach(i=>seen.delete(i)); saveSeen(); refresh(); return; } tr.dataset.c='1'; tr.textContent='Wirklich zurücksetzen?'; setTimeout(()=>{ if(tr.isConnected){ delete tr.dataset.c; tr.textContent='Häkchen zurücksetzen'; } },4000); };
 }
 function drawTour(){
-  tourLayer.clearLayers(); if(st.tab!=='tour')return;
-  L.polyline(D.tour.ids.map(i=>BY[i].ll),{renderer:rHl,color:css('--accent'),weight:3,dashArray:'2 8',lineCap:'round',interactive:false}).addTo(tourLayer);
+  tourLayer.clearLayers(); if(st.tab!=='tour'&&!nav)return;
+  const c=css('--accent');
+  if(D.tour.lines) D.tour.lines.forEach((l,i)=>{
+    const act=nav&&i===nav.idx-1, done=seen.has(D.tour.ids[i+1]);
+    L.polyline(toLL(l),{renderer:rHl,color:done?css('--ok'):c,weight:act?6:4,opacity:act?1:.75,lineCap:'round',lineJoin:'round',interactive:false}).addTo(tourLayer);
+  });
+  else L.polyline(D.tour.ids.map(i=>BY[i].ll),{renderer:rHl,color:c,weight:3,dashArray:'2 8',lineCap:'round',interactive:false}).addTo(tourLayer);
+  if(nav&&me&&nav.idx<D.tour.ids.length) L.polyline([me.ll,BY[D.tour.ids[nav.idx]].ll],{renderer:rHl,color:css('--me'),weight:2,dashArray:'3 6',interactive:false}).addTo(tourLayer);
 }
+
+/* ---------- Navigation im Rundgang ---------- */
+let nav=null; // {idx}
+try{ const n=JSON.parse(localStorage.getItem(P+'-nav')||'null'); if(n&&Number.isInteger(n.idx)) nav=n; }catch(e){}
+const saveNav=()=>{ try{ nav?localStorage.setItem(P+'-nav',JSON.stringify(nav)):localStorage.removeItem(P+'-nav'); }catch(e){} };
+function startNav(){
+  const ids=D.tour.ids; let idx=ids.findIndex(i=>!seen.has(i)); if(idx<0) idx=0;
+  nav={idx}; saveNav(); if(st.tab!=='tour') setTab('tour');
+  if(locBtn&&watchId===null) startGps();
+  renderNav(); refresh(); flyToTarget();
+}
+function stopNav(){ nav=null; saveNav(); $('#navBar')?.remove(); refresh(); }
+function flyToTarget(){
+  if(!nav) return; const t=BY[D.tour.ids[nav.idx]]; if(!t) return;
+  const pts=[t.ll]; if(me) pts.push(me.ll);
+  map.flyToBounds(L.latLngBounds(pts).pad(.4),{duration:.7,maxZoom:17,paddingBottomRight:[0,innerWidth<=760?innerHeight*.4:0]});
+}
+function arrive(){
+  const ids=D.tour.ids, o=BY[ids[nav.idx]]; seen.add(o.id); saveSeen();
+  try{navigator.vibrate&&navigator.vibrate([150,80,150]);}catch(_){}
+  let n=nav.idx+1; while(n<ids.length&&seen.has(ids[n])) n++;
+  if(n>=ids.length){ toast('Geschafft! Du hast alle '+ids.length+' Stationen besucht.'); stopNav(); return; }
+  toast('Station '+(nav.idx+1)+' erreicht: '+o.n); nav.idx=n; saveNav(); refresh(); renderNav(); flyToTarget();
+}
+function renderNav(){
+  let bar=$('#navBar');
+  if(!nav){ bar?.remove(); return; }
+  if(!bar){ bar=document.createElement('div'); bar.className='navbar'; bar.id='navBar'; bar.addEventListener('click',e=>e.stopPropagation()); L.DomEvent.disableClickPropagation(bar); $('#map').append(bar); }
+  const ids=D.tour.ids, o=BY[ids[nav.idx]], d=me?distTo(o):null, done=ids.filter(i=>seen.has(i)).length;
+  bar.innerHTML=`<div class="nv-top"><span class="pin" style="--c:var(${KAT[o.kat][1]})">${nav.idx+1}</span>
+      <span class="nv-t"><b>${esc(o.n)}</b><small>Station ${nav.idx+1} von ${ids.length}${d!=null?' · ca. '+walkMin(d*1.25)+' Min. zu Fuß':me===null&&locBtn?' · Standort wird gesucht …':''}</small></span>
+      ${d!=null?`<span class="nv-d">${d<NEAR_M?'da':fmtM(d)}</span>`:''}</div>
+    <div class="nv-prog"><i style="width:${Math.round(done/ids.length*100)}%"></i></div>
+    <div class="btnrow"><button class="btn" id="nvShow" type="button">Infos</button>${!me||d>=NEAR_M?'<button class="btn" id="nvHere" type="button">Bin da</button>':''}<button class="btn" id="nvSkip" type="button">Überspringen</button><button class="btn" id="nvEnd" type="button">Beenden</button></div>`;
+  $('#nvShow').onclick=()=>select(o);
+  if($('#nvHere')) $('#nvHere').onclick=arrive;
+  $('#nvSkip').onclick=()=>{ nav.idx=(nav.idx+1)%ids.length; saveNav(); refresh(); renderNav(); flyToTarget(); };
+  $('#nvEnd').onclick=stopNav;
+}
+
+/* ---------- Figurenseiten ---------- */
+function renderFig(){
+  const el=$('#pFig');
+  if(!st.figSel){
+    const cnt=f=>O.filter(o=>o.fig.includes(f)).length;
+    el.innerHTML=`<div class="tour-h"><h2>Figuren</h2><p>Die wichtigsten Figuren der Serie und wo sie auf der Karte zu finden sind.</p></div>
+      <ul class="figs-grid">${Object.entries(FIG).map(([k,f])=>`<li><button class="fcard" data-f="${k}" type="button"><span class="fav">${esc(f.name.replace(/[„“"]/g,'').trim()[0])}</span><span><b>${esc(f.name)}</b><small>${esc(f.rolle)} · ${esc(f.actor)}</small></span><span class="cnt">${cnt(k)} ${cnt(k)===1?'Ort':'Orte'}</span></button></li>`).join('')}</ul>`;
+    el.querySelectorAll('.fcard').forEach(b=>b.onclick=()=>openFigure(b.dataset.f));
+    return;
+  }
+  const f=FIG[st.figSel], v=O.filter(visible);
+  el.innerHTML=`<div class="fprof"><button class="link-btn" id="figBack" type="button" style="justify-self:start">← Alle Figuren</button>
+      <h2>${esc(f.name)}</h2><span class="act">gespielt von ${esc(f.actor)}</span><p>${esc(f.bio)}</p>
+      ${v.length?'<div class="btnrow"><button class="btn" id="figMap" type="button">Alle Orte auf der Karte</button></div>':''}</div>
+    <ul class="list">${v.length?v.map(o=>itemHtml(o)).join(''):'<li class="empty">Zu dieser Figur ist noch kein Drehort bekannt. Wenn du einen kennst, ordne ihn beim Hinzufügen oder Bearbeiten eines eigenen Drehorts zu.</li>'}</ul>`;
+  $('#figBack').onclick=()=>{ st.figSel=null; refresh(); };
+  if($('#figMap')) $('#figMap').onclick=fitFigure;
+}
+function fitFigure(){ let v=O.filter(visible); if(!v.length) return; if(v.some(o=>o.kat!=='umland')) v=v.filter(o=>o.kat!=='umland'); const b=L.latLngBounds(v.map(o=>o.ll));
+  map.flyToBounds(b.pad(.2),{duration:.7,maxZoom:16,paddingBottomRight:[0,innerWidth<=760?innerHeight*.4:0]}); }
+function openFigure(f){ if(!FIG[f]) return; st.figSel=f; sel=null; $('#detail').hidden=true; setTab('fig'); fitFigure(); }
 function setTab(t){
   st.tab=t; document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
-  $('#pAll').hidden=t!=='all'; $('#pTour').hidden=t!=='tour';
+  $('#pAll').hidden=t!=='all'; $('#pTour').hidden=t!=='tour'; $('#pFig').hidden=t!=='fig';
+  if(t!=='fig') st.figSel=null;
   refresh();
-  if(t==='tour') map.flyToBounds(L.latLngBounds(D.tour.ids.map(i=>BY[i].ll)).pad(.15),{duration:.7});
+  if(t==='tour'&&!nav) map.flyToBounds(L.latLngBounds(D.tour.ids.map(i=>BY[i].ll)).pad(.1),{duration:.7,paddingTopLeft:[10,10],paddingBottomRight:[10,innerWidth<=760?innerHeight*.45:10]});
 }
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
-function refresh(){ renderList(); if(st.tab==='tour')renderTour(); buildOrte(); drawTour(); }
+function refresh(){ renderList(); if(st.tab==='tour')renderTour(); if(st.tab==='fig')renderFig(); buildOrte(); drawTour(); }
 $('#sideBody').addEventListener('click',e=>{const b=e.target.closest('.item'); if(b) select(BY[b.dataset.id]);});
 $('#sheetToggle').onclick=()=>$('#side').classList.toggle('open');
 
@@ -589,11 +704,11 @@ function mediaHtml(o){
   const f=o.foto, s=SZ[o.id];
   const fcap=f?`${f.exact?'':'Foto von heute: Straßenansicht in der Nähe, nicht der Drehort selbst. '}Foto: ${esc(f.by)} · ${esc(f.lic)} · <a href="${f.page}" target="_blank" rel="noopener">Wikimedia Commons</a>`:'';
   if(s) return `<figure class="d-photo cmp${f?'':' solo'}" id="cmp" style="--x:50%"><div class="frame">
-      ${f?`<img src="${f.src}" alt="${esc(o.n)} heute">`:''}<img class="then" src="${s.src}" alt="Szene aus 4 Blocks am Drehort ${esc(o.n)}">
+      ${f?`<img src="${f.src}" alt="${esc(o.n)} heute">`:''}<img class="then" src="${s.src}" alt="Szene aus ${SERIE_N} am Drehort ${esc(o.n)}">
       ${f?'<div class="handle"></div><input type="range" id="cmpR" min="0" max="100" value="50" aria-label="Regler: links Serie, rechts heute">':''}
       <span class="tag l">Serie${s.folge?' · '+esc(s.folge):''}</span>${f?`<span class="tag r">Heute${f.exact?'':' · Umgebung'}</span>`:''}
       <button class="zoom" id="dZoom" aria-label="Szenenbild vergrößern">${ZOOMI}</button></div>
-    <figcaption>Szenenbild aus 4 Blocks (TNT Serie / Wiedemann &amp; Berg Television) als Beleg für den Drehort${f?'. Regler ziehen zum Vergleichen. '+fcap:'.'}</figcaption></figure>`;
+    <figcaption>Szenenbild aus ${CREDIT} als Beleg für den Drehort${f?'. Regler ziehen zum Vergleichen. '+fcap:'.'}</figcaption></figure>`;
   if(f) return `<figure class="d-photo"><img src="${f.src}" alt="${esc(o.n)}">${f.exact?'':'<span class="near">Umgebung</span>'}<button class="zoom" id="dZoom" aria-label="Foto vergrößern">${ZOOMI}</button><figcaption>${fcap}</figcaption></figure>`;
   return '';
 }
@@ -611,7 +726,7 @@ function renderSzene(o){
   $('#dMedia').innerHTML=mediaHtml(o); $('#dSzene').innerHTML=szeneHtml(o);
   const f=o.foto, s=SZ[o.id];
   const z=$('#dZoom'); if(z) z.onclick=()=>{const lb=document.createElement('div'); lb.className='lb';
-    lb.innerHTML=s?`<img src="${s.src}" alt=""><p>${esc(o.n)} · Szene aus 4 Blocks${s.folge?' · '+esc(s.folge):''}</p>`:`<img src="${f.src}" alt=""><p>${esc(o.n)} · Foto: ${esc(f.by)} · ${esc(f.lic)}</p>`;
+    lb.innerHTML=s?`<img src="${s.src}" alt=""><p>${esc(o.n)} · Szene aus ${SERIE_N}${s.folge?' · '+esc(s.folge):''}</p>`:`<img src="${f.src}" alt=""><p>${esc(o.n)} · Foto: ${esc(f.by)} · ${esc(f.lic)}</p>`;
     lb.onclick=()=>lb.remove(); document.body.append(lb);};
   const r=$('#cmpR'); if(r) r.oninput=()=>$('#cmp').style.setProperty('--x',r.value+'%');
   const fi=$('#szFile'); if(fi) fi.onchange=()=>{ if(fi.files[0]) uploadSzene(o,fi.files[0]); };
@@ -667,7 +782,7 @@ async function removeSzene(o){
   }catch(e){ toast(errText(e)); }
   onSzChange();
 }
-const idbOpen=()=>new Promise((res,rej)=>{const r=indexedDB.open('4blocks',1); r.onupgradeneeded=()=>r.result.createObjectStore('szenen',{keyPath:'id'}); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);});
+const idbOpen=()=>new Promise((res,rej)=>{const r=indexedDB.open(META.idb||'4blocks',1); r.onupgradeneeded=()=>r.result.createObjectStore('szenen',{keyPath:'id'}); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);});
 async function idbAll(){const db=await idbOpen(); return new Promise((res,rej)=>{const q=db.transaction('szenen').objectStore('szenen').getAll(); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error);});}
 async function idbDo(fn){const db=await idbOpen(); return new Promise((res,rej)=>{const tx=db.transaction('szenen','readwrite'); fn(tx.objectStore('szenen')); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);});}
 async function initSzenen(){
@@ -696,7 +811,7 @@ document.addEventListener('paste',e=>{
 });
 /* ---------- Eigene Drehorte hinzufügen ---------- */
 let adding=false, formOpen=false, draft=null, pinMk=null, editing=null;
-const OWNKEY='4b-orte';
+const OWNKEY=P+'-orte';
 function loadLocalOwn(){ try{ return JSON.parse(localStorage.getItem(OWNKEY)||'[]'); }catch(e){ return []; } }
 function saveLocalOwn(list){ localStorage.setItem(OWNKEY,JSON.stringify(list)); }
 function cleanOwn(r){
@@ -709,7 +824,7 @@ function cleanOwn(r){
 }
 function setOwn(list){
   for(let i=O.length-1;i>=NFIX;i--){ delete BY[O[i].id]; O.splice(i,1); }
-  list.map(cleanOwn).filter(Boolean).sort((a,b)=>a.at-b.at).forEach(o=>{ o.ll=L.latLng(o.p[1],o.p[0]); O.push(o); BY[o.id]=o; });
+  list.map(cleanOwn).filter(o=>o&&!BY[o.id]).sort((a,b)=>a.at-b.at).forEach(o=>{ o.ll=L.latLng(o.p[1],o.p[0]); O.push(o); BY[o.id]=o; });
   O.forEach((o,i)=>o.nr=i+1);
   if(sel&&!BY[sel.id]){ sel=null; if(!formOpen) $('#detail').hidden=true; } else if(sel) sel=BY[sel.id];
   updateCounts(); buildOrte(); renderList(); if(st.tab==='tour') renderTour();
@@ -814,9 +929,9 @@ $('#addBtn').onclick=startAdd;
 /* ---------- Abgleich zwischen Geräten (nur Handy-App / lokaler Modus) ---------- */
 const SYNC_API='https://4blocks-sync.boettinger-oehm.workers.dev/v1/';
 let syncCode=null, syncing=false, syncPending=false, syncTimer=null, lastSync=0, syncErr='', showQr=false, enterCode=false;
-try{ syncCode=localStorage.getItem('4b-sync')||null; }catch(e){}
-const loadTomb=()=>{ try{ return JSON.parse(localStorage.getItem('4b-tomb')||'{}'); }catch(e){ return {}; } };
-const saveTomb=t=>{ try{ localStorage.setItem('4b-tomb',JSON.stringify(t)); }catch(e){} };
+try{ syncCode=localStorage.getItem(P+'-sync')||null; }catch(e){}
+const loadTomb=()=>{ try{ return JSON.parse(localStorage.getItem(P+'-tomb')||'{}'); }catch(e){ return {}; } };
+const saveTomb=t=>{ try{ localStorage.setItem(P+'-tomb',JSON.stringify(t)); }catch(e){} };
 function addTomb(k){ const t=loadTomb(); t[k]=Date.now(); saveTomb(t); }
 const normCode=s=>String(s||'').toLowerCase().replace(/^.*#sync-/,'').replace(/[^a-z0-9]/g,'');
 const fmtCode=c=>c.match(/.{1,4}/g).join('-');
@@ -878,10 +993,10 @@ async function syncNow(){
 }
 function connect(code){
   code=normCode(code); if(code.length<20){ toast('Der Code ist zu kurz. Er hat 24 Zeichen.'); return; }
-  syncCode=code; try{ localStorage.setItem('4b-sync',code); }catch(e){}
+  syncCode=code; try{ localStorage.setItem(P+'-sync',code); }catch(e){}
   enterCode=false; showQr=false; renderSync(); syncNow().then(()=>{ if(!syncErr) toast('Abgleich verbunden'); });
 }
-function disconnect(){ syncCode=null; try{ localStorage.removeItem('4b-sync'); }catch(e){} showQr=false; renderSync(); toast('Abgleich getrennt. Deine Daten bleiben auf diesem Gerät.'); }
+function disconnect(){ syncCode=null; try{ localStorage.removeItem(P+'-sync'); }catch(e){} showQr=false; renderSync(); toast('Abgleich getrennt. Deine Daten bleiben auf diesem Gerät.'); }
 function loadQrLib(){ return window.QRCode?Promise.resolve():new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload=res; s.onerror=rej; document.head.append(s); }); }
 function renderSync(){
   const b=$('#syncBlock'); if(!b) return;
@@ -913,6 +1028,45 @@ function renderSync(){
   const off=$('#syncOff'); off.onclick=()=>{ if(off.dataset.c) return disconnect(); off.dataset.c='1'; off.textContent='wirklich trennen?'; setTimeout(()=>{ if(off.isConnected){ delete off.dataset.c; off.textContent='trennen'; } },4000); };
   if(showQr) loadQrLib().then(()=>{ const el=$('#syncQr'); if(el&&!el.childNodes.length) new QRCode(el,{text:syncLink(),width:340,height:340,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M}); }).catch(()=>{ const el=$('#syncQr'); if(el) el.textContent='QR-Code konnte nicht geladen werden. Nutze den Link.'; });
 }
+/* ---------- Offline-Paket (Handy-App) ---------- */
+let offBusy=false, offState=null;
+function offUrls(){
+  const same=['./','index.html','basiskarte.json','drehorte.json','manifest.webmanifest','icon-192.png',...O.filter(o=>o.foto).map(o=>o.foto.src)];
+  const ext=['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'];
+  const font=document.querySelector('link[href*="fonts.googleapis.com/css"]'); if(font) ext.push(font.href);
+  return {same,ext};
+}
+async function offlineCheck(){
+  const {same,ext}=offUrls(); let have=0; const all=[...same,...ext];
+  for(const u of all) if(await caches.match(u)) have++;
+  const fotos=O.filter(o=>o.foto).length, sz=Object.keys(SZ).length;
+  offState={have,total:all.length,fotos,sz}; renderOff();
+}
+async function offlinePrepare(){
+  if(offBusy) return; offBusy=true; renderOff();
+  try{
+    const c=await caches.open('ext'), {same,ext}=offUrls();
+    for(const u of same){ if(!(await caches.match(u))){ const r=await fetch(u,{cache:'reload'}); if(r.ok) await c.put(u,r); } }
+    for(const u of ext){
+      const r=await fetch(u,{mode:'cors',cache:'reload'}); if(!r.ok) continue;
+      if(u.includes('fonts.googleapis.com')){ const txt=await r.clone().text(); await c.put(u,r);
+        for(const m of txt.matchAll(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g)){ if(!(await caches.match(m[1]))){ const fr=await fetch(m[1],{mode:'cors'}); if(fr.ok) await c.put(m[1],fr); } } }
+      else await c.put(u,r);
+    }
+    toast('Offline-Paket gespeichert');
+  }catch(e){ toast('Offline-Paket unvollständig: '+(e.message||e)+'. Bitte mit Netz nochmal versuchen.'); }
+  offBusy=false; offlineCheck();
+}
+function renderOff(){
+  const b=$('#offBlock'); if(!b) return;
+  b.hidden=!(szMode==='local'&&'caches' in window&&'serviceWorker' in navigator&&window.self===window.top); if(b.hidden) return;
+  const s=offState, ok=s&&s.have>=s.total;
+  b.innerHTML=`<div class="block-h"><span class="lbl">Offline nutzen</span></div>
+    <div class="off-st ${ok?'ok':''}"><i></i><span>${offBusy?'Wird gespeichert …':!s?'Wird geprüft …':ok?`Offline bereit: Karte, ${s.fotos} Fotos${s.sz?', '+s.sz+' Szenenbilder':''}`:`Noch nicht vollständig offline (${s.have} von ${s.total} Dateien)`}</span></div>
+    ${ok||offBusy?'':'<p class="note">Speichere alles vorab, dann funktioniert die App unterwegs auch ohne Netz, zum Beispiel in der U-Bahn.</p><div class="btnrow"><button class="btn primary" id="offGo" type="button">Für offline speichern</button></div>'}`;
+  if($('#offGo')) $('#offGo').onclick=offlinePrepare;
+}
+
 function startSync(){
   if(szMode!=='local') return;
   const m=location.hash.match(/^#sync-([a-z0-9]{20,64})$/i);
@@ -925,12 +1079,13 @@ function startSync(){
 
 /* ---------- Beschreibung bearbeiten und ergänzen ---------- */
 const TX={}; let txEditing=null, txShowOrig=false;
-const loadTx=()=>{ try{ return JSON.parse(localStorage.getItem('4b-texte')||'{}'); }catch(e){ return {}; } };
-const saveTx=t=>{ try{ localStorage.setItem('4b-texte',JSON.stringify(t)); }catch(e){} };
+const loadTx=()=>{ try{ return JSON.parse(localStorage.getItem(P+'-texte')||'{}'); }catch(e){ return {}; } };
+const saveTx=t=>{ try{ localStorage.setItem(P+'-texte',JSON.stringify(t)); }catch(e){} };
 const rolleOf=o=>(!o.own&&TX[o.id])?TX[o.id].rolle:(o.rolle||'');
+const txChanged=o=>!o.own&&!!TX[o.id]&&TX[o.id].rolle.trim()!==(o.rolle||'').trim();
 function renderText(o,edit){
   const el=document.getElementById('dText'); if(!el) return;
-  const t=rolleOf(o), can=canUpload(), changed=!o.own&&!!TX[o.id];
+  const t=rolleOf(o), can=canUpload(), changed=txChanged(o);
   if(edit){
     txEditing=o.id;
     el.innerHTML=`<label class="fld"><span>Beschreibung – ändern oder ergänzen, z. B. weitere Szenen, Folgen, Details vom Dreh</span><textarea id="txIn" maxlength="4000">${esc(t)}</textarea></label>
@@ -975,7 +1130,7 @@ async function resetText(o){
   }catch(e){ toast(errText(e)); }
 }
 
-function currentSeq(){return st.tab==='tour'?D.tour.ids.map(i=>BY[i]):listSeq();}
+function currentSeq(){return st.tab==='tour'?D.tour.ids.map(i=>BY[i]):st.tab==='fig'?O.filter(visible):listSeq();}
 function select(o,opt={}){
   if(formOpen||adding) return;
   txEditing=null; if(sel!==o) txShowOrig=false;
@@ -992,7 +1147,7 @@ function select(o,opt={}){
     ${o.tipp?`<p class="tip"><b>Vor Ort:</b> ${esc(o.tipp)}</p>`:''}
     <dl class="meta">
       ${o.st?`<dt>Anfahrt</dt><dd>${stationHtml(o.st)}</dd>`:''}
-      ${o.fig.length?`<dt>Figuren</dt><dd>${o.fig.map(f=>`<button class="fig" data-f="${f}" title="Alle Orte mit ${esc(f)}">${esc(FIG[f])}</button>`).join('')}</dd>`:''}
+      ${o.fig.length?`<dt>Figuren</dt><dd>${o.fig.map(f=>`<button class="fig" data-f="${f}" title="Figurenseite öffnen">${esc(FIG[f].name)} <small>(${esc(FIG[f].actor)})</small></button>`).join('')}</dd>`:''}
       ${o.staffel?`<dt>Staffel</dt><dd><span class="stf">${esc(o.staffel)}</span></dd>`:''}
       ${me?`<dt>Entfernung</dt><dd id="dDist">${distHtml(o)}</dd>`:''}
     </dl>
@@ -1013,7 +1168,7 @@ function select(o,opt={}){
     const od=$('#oDel'); od.onclick=()=>{ if(od.dataset.c) return deleteOwn(o); od.dataset.c='1'; od.textContent='Wirklich löschen?'; setTimeout(()=>{ if(od.isConnected){ delete od.dataset.c; od.textContent='Löschen'; } },4000); }; }
   if($('#dCopy')) $('#dCopy').onclick=async e=>{const t=o.adr; try{await navigator.clipboard.writeText(t); e.target.textContent='kopiert';}catch(_){const r=document.createRange(); r.selectNodeContents($('#dAdr')); const s=getSelection(); s.removeAllRanges(); s.addRange(r);}};
   $('#dSeen').onclick=()=>{seen.has(o.id)?seen.delete(o.id):seen.add(o.id); saveSeen(); select(o,{fly:false});};
-  d.querySelectorAll('.fig').forEach(b=>b.onclick=()=>setFig(b.dataset.f));
+  d.querySelectorAll('.fig').forEach(b=>b.onclick=()=>openFigure(b.dataset.f));
   $('#dPrev').onclick=()=>select(seq[(idx-1+seq.length)%seq.length]);
   $('#dNext').onclick=()=>select(seq[(idx+1)%seq.length]);
   if(opt.fly!==false){
@@ -1029,15 +1184,17 @@ document.addEventListener('keydown',e=>{ if(e.key!=='Escape')return; const lb=do
 map.on('click',e=>{ if(adding||formOpen){ placePin(e.latlng); return; } if(sel) close(); });
 
 /* ---------- Start ---------- */
-map.fitBounds(L.latLngBounds(O.map(o=>o.ll)).pad(.05),{paddingTopLeft:[10,10],paddingBottomRight:[10,innerWidth<=760?innerHeight*.4:10]});
+map.fitBounds(L.latLngBounds(O.filter(o=>o.kat!=='umland').map(o=>o.ll)).pad(.05),{paddingTopLeft:[10,10],paddingBottomRight:[10,innerWidth<=760?innerHeight*.4:10]});
 map.on('zoomend',()=>{styleBase();drawLabels();buildOrte();});
 map.on('moveend',drawLabels);
 styleBase(); drawLabels(); refresh();
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{styleBase();buildOrte();drawTour();});
 new MutationObserver(()=>{styleBase();buildOrte();drawTour();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-if(location.hash==='#rundgang') setTab('tour');
+if(location.hash==='#rundgang'||nav) setTab('tour');
+if(nav) renderNav();
+if(location.hash==='#figuren') setTab('fig');
 $('#loading').remove();
-initSzenen().then(()=>{ updateAddUi(); startSync(); });
+initSzenen().then(()=>{ updateAddUi(); startSync(); if('caches' in window) offlineCheck().catch(()=>{}); });
 })().catch(e=>{const l=document.getElementById('loading'); if(l) l.textContent='Karte konnte nicht geladen werden: '+e.message;});
 </script>
 

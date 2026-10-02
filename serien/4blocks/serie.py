@@ -2,16 +2,17 @@
 MV='https://mitvergnuegen.com/2018/11-drehorte-aus-4-blocks-die-ihr-besuchen-koennt'
 SB='https://sbahn.berlin/was-hast-du-vor/neues-entdecken/artikel/4-blocks-diese-drehorte-muesst-ihr-kennen/'
 YV='https://yovie.de/drehorte-berlin/'
-S={'mv':['Mit Vergnügen',MV],'sb':['S-Bahn Berlin',SB],'yv':['yovie',YV]}
+UH='https://unserhavelland.de/2019/06/03/dreharbeiten-fuer-4-blocks-clan-machenschaften-in-brieselang/'
+S={'mv':['Mit Vergnügen',MV],'sb':['S-Bahn Berlin',SB],'yv':['yovie',YV],'uh':['Unser Havelland',UH]}
 
-# kat: clan | revier | justiz | glamour | kiez
+# kat: clan | revier | justiz | glamour | kiez | umland
 ORTE=[
  dict(id='highdeck',n='High-Deck-Siedlung',kat='clan',geo='pt:highdeck',radius=260,kiez='Neukölln',
       adr='Michael-Bohnen-Ring / Sonnenallee, 12057 Berlin',st='S Köllnische Heide',
       rolle='Die markante Großsiedlung der 1970er mit ihren Hochdeck-Laubengängen über der Straße. Hier wurde die spektakuläre Polizei-Razzia der ersten Folge gedreht.',
       tipp='Die Siedlung wird wegen der Serie oft als die „echten 4 Blocks“ bezeichnet. Rund 6.000 Menschen wohnen hier, bitte Rücksicht nehmen.',
       fig=['Toni','Latif'],staffel='S1',q=['yv','mv','sb']),
- dict(id='sonnenallee',n='Sonnenallee',kat='kiez',geo='street:Sonnenallee',kiez='Neukölln',
+ dict(id='sonnenallee',n='Sonnenallee',kat='kiez',geo='street:Sonnenallee',clip=[None,13.462],kiez='Neukölln',
       adr='Sonnenallee, zwischen Hermannplatz und Estrel',st='U Hermannplatz · S Sonnenallee',
       rolle='Die Lebensader des Hamady-Reviers. Sie zieht sich durch die gesamte Serie und ist prominent im Intro jeder Folge zu sehen.',
       tipp='Am besten zu Fuß vom Hermannplatz Richtung Südosten, mit Stopp bei einer der vielen arabischen Bäckereien.',
@@ -81,17 +82,35 @@ ORTE=[
       rolle='Gerichtsszenen im wuchtigen Kriminalgericht: Abbas muss sich hier wegen Mordes verantworten.',
       alt='Mit Vergnügen nennt Turmstraße 92; das Gerichtsgebäude trägt die Hausnummer 91.',
       fig=['Abbas'],staffel='S2',q=['mv']),
+ dict(id='brieselang',n='Gasthaus & Bahnhof Brieselang',kat='umland',geo='pt:brieselang',kiez='Brieselang (Havelland)',
+      adr='Platz des Friedens 1, 14656 Brieselang',st='Bahnhof Brieselang (Regionalbahn ab Berlin-Spandau)',
+      rolle='Für die dritte und letzte Staffel drehte das Team am 3. Juni 2019 im Gasthaus am Bahnhof Brieselang: drinnen eine Szene mit einem Eisbecher, draußen am Bahnhof zwei weitere Szenen, darunter eine Raucherszene. Vor der Kamera stand Kida Khodr Ramadan als Toni Hamady.',
+      tipp='Das Gasthaus ist ein ganz normales Restaurant direkt am Bahnhof, rund 20 Minuten westlich von Spandau.',
+      fig=['Toni'],staffel='S3',q=['uh']),
 ]
 
+# Figuren (Besetzung laut Wikipedia), kurz = Chip-Beschriftung
 FIG={
- 'Toni':'Ali „Toni“ Hamady, Clanchef (Kida Khodr Ramadan)',
- 'Vince':'Vince Kühn, verdeckter Ermittler (Frederick Lau)',
- 'Abbas':'Abbas Hamady, Tonis Bruder (Veysel Gelin)',
- 'Latif':'Latif, Tonis Schwager (Massiv)',
- 'Kalila':'Kalila Hamady, Tonis Frau (Almila Bagriacik)',
- 'Amara':'Amara',
- 'Zeki':'Zeki, junges Clan-Mitglied',
- 'Issam':'Issam, junges Clan-Mitglied',
+ 'Toni':dict(name='Ali „Toni“ Hamady',actor='Kida Khodr Ramadan',rolle='Oberhaupt des Hamady-Clans',
+   bio='Toni will raus aus dem Clan und ein legales Leben führen, wird aber immer wieder in die Geschäfte hineingezogen. In Staffel 2 steigt er ins Immobiliengeschäft ein, in Staffel 3 kämpft er nach dem Tod seiner Frau um das Sorgerecht für seine Tochter.'),
+ 'Vince':dict(name='Vince Kerner',actor='Frederick Lau',rolle='Jugendfreund und verdeckter Ermittler',
+   bio='Vince ist Tonis alter Jugendfreund und gewinnt sein Vertrauen. In Wahrheit ist er ein verdeckter Ermittler der Polizei, der sich in den Clan einschleust.'),
+ 'Abbas':dict(name='Abbas Hamady',actor='Veysel Gelin',rolle='Tonis jüngerer Bruder',
+   bio='Abbas ist Tonis jüngerer Bruder und unberechenbar. In Staffel 2 steht er wegen Mordes vor Gericht.'),
+ 'Latif':dict(name='Latif Hamady',actor='Massiv',rolle='Organisiert das Drogengeschäft',
+   bio='Latif ist mit Tonis Schwester Amara verheiratet und organisiert das Drogengeschäft der Familie. Nach einer Razzia landet er in Untersuchungshaft.'),
+ 'Amara':dict(name='Amara Hamady',actor='Almila Bagriacik',rolle='Schwester von Toni und Abbas',
+   bio='Amara ist die Schwester von Toni und Abbas und mit Latif verheiratet.'),
+ 'Kalila':dict(name='Kalila Hamady',actor='Maryam Zaree',rolle='Tonis Frau',
+   bio='Kalila ist Tonis Frau. In Staffel 2 wird sie schwer verletzt, ihr Tod prägt Staffel 3.'),
+ 'Zeki':dict(name='Zeki',actor='Rauand Taleb',rolle='Drogenläufer',
+   bio='Zeki gehört zu den jungen Läufern des Clans und dealt im Görlitzer Park.'),
+ 'Issam':dict(name='Issam',actor='Emilio Sakraya',rolle='Drogenläufer',
+   bio='Issam dealt zusammen mit Zeki im Görlitzer Park und verliebt sich dort.'),
+ 'Kutscha':dict(name='Hagen Kutscha',actor='Oliver Masucci',rolle='Leiter der Polizeiermittlungen',
+   bio='Hagen Kutscha leitet die Ermittlungen der Polizei gegen den Clan.'),
+ 'Ruffi':dict(name='Rainer „Ruffi“ Ruff',actor='Ronald Zehrfeld',rolle='Präsident eines Rockerclubs',
+   bio='Ruffi ist Präsident eines Rockerclubs, mit dem der Clan aneinandergerät.'),
 }
 KAT={
  'clan':['Clan & Familie','--k-clan'],
@@ -99,6 +118,51 @@ KAT={
  'justiz':['Polizei & Justiz','--k-justiz'],
  'glamour':['Deals in feiner Kulisse','--k-glamour'],
  'kiez':['Straßen & Kiez','--k-kiez'],
+ 'umland':['Außerhalb Berlins','--k-umland'],
 }
 # Neukölln-Rundgang, zu Fuß
 TOUR=['rathaus','teppich','blackwhite','elsalam','stuttgarter','estrel','highdeck']
+
+# Fotos von Wikimedia Commons: Ort -> [Dateiname, 1 = zeigt den Drehort selbst / 0 = Umgebung]
+FOTOS={
+ 'highdeck':['High-Deck-Siedlung Berlin-Neukölln 01.jpg',1],
+ 'sonnenallee':['Sonnenallee Berlin-Neukölln 2020-06-26 01.jpg',1],
+ 'blackwhite':['Sonnenallee Berlin-Neukölln 2020-06-26 02.jpg',0],
+ 'elsalam':['Neukölln Wildenbruchstraße.JPG',0],
+ 'stuttgarter':['Neukölln Stuttgarter Straße.JPG',0],
+ 'teppich':['Berlin-Neukölln, Fuldastraße.JPG',0],
+ 'rathaus':['Berlin Neukoelln Rathaus asv2021-03 img1.jpg',1],
+ 'kms':['Karl-Marx-Straße, Berlin-Neukölln, Bild 1.jpg',1],
+ 'hermannstr':['Berlin Neukoelln 10Hermannstrasse.JPG',1],
+ 'hasenheide':['Volkspark Hasenheide.jpg',1],
+ 'estrel':['Berlin Estrel Neukölln asv2023-11.jpg',1],
+ 'private':['Britzer Damm - Wohnblock - geo.hlipp.de - 35492.jpg',0],
+ 'kotti':['Cafe-kotti adalbertstr-96 von der brücke aus 2023-09-03.png',1],
+ 'goerli':['Görlitzer Park, Berlin.jpg',1],
+ 'daimler':['Berlin - Weinhaus Huth.jpg',1],
+ 'jva':['Berlin Jail Moabit Front Dec 2004b.jpg',1],
+ 'amtsgericht':['Berlin-Kriminalgericht Moabit-Turmstr-Nr91-08-2023-gje.jpg',1],
+ 'brieselang':['Bahnhof Brieselang.jpg',1],
+}
+
+# ---- Serien-Konfiguration (Texte, Kartenausschnitt, Speicher-Namen) ----
+META=dict(
+  slug='4blocks', short='4 Blocks',
+  title='4 Blocks Drehorte Berlin', h1='4 Blocks', h1b='Drehorte',
+  eyebrow='TNT Serie · 2017–2019 · Berlin',
+  intro='Schauplätze der Clan-Serie um Toni Hamady, von der Sonnenallee bis nach Brieselang.',
+  description='Die Berliner Drehorte der Serie 4 Blocks auf einer Karte, mit Szenen, Fotos und Neukölln-Rundgang.',
+  credit='4 Blocks (TNT Serie / Wiedemann &amp; Berg Television)',
+  note='Einige Orte sind Privathäuser oder Wohnsiedlungen. Bitte nur von der Straße aus ansehen und die Bewohner in Ruhe lassen.',
+  sources=[[S[k][0],S[k][1]] for k in ('mv','sb','yv','uh')],
+  tourTab='Neukölln-Rundgang', tourTitle='Durch Tonis Revier',
+  tourIntro='Ein Spaziergang vom Rathaus Neukölln über Sonnenallee, Weserkiez und Estrel bis zur High-Deck-Siedlung. Start an der U7 Rathaus Neukölln, Ende an der S Köllnische Heide.',
+  store='4b', idb='4blocks',          # Namen für den Speicher im Browser (nie ändern, sonst sind Daten weg)
+  lat=52.49,                          # Breitengrad für Entfernungsrechnung
+  bbox='52.445,13.340,52.532,13.480', # Basiskarte (S,W,N,O)
+  extra_bboxes=['52.574,12.982,52.592,13.024'],  # kleine Zusatzausschnitte, z. B. Brieselang
+  walk_bbox='52.456,13.422,52.494,13.488',       # Fußwegenetz für den Rundgang
+  maxBounds=[[52.435,12.95],[52.60,13.50]],
+  admin_label=['Neukölln','Friedrichshain-Kreuzberg','Mitte','Tempelhof-Schöneberg'],
+  root=True,                          # Handy-App unter docs/ (sonst docs/<slug>/)
+)
